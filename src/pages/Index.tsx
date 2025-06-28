@@ -1,11 +1,131 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import Sidebar from '@/components/Sidebar';
+import UserProfile from '@/components/UserProfile';
+import WeeklyTimetable from '@/components/WeeklyTimetable';
+import DailyGoals from '@/components/DailyGoals';
+import FunActivities from '@/components/FunActivities';
+import VideoPlayer from '@/components/VideoPlayer';
+
+interface Chapter {
+  id: number;
+  title: string;
+  completed: boolean;
+}
+
+interface Video {
+  id: number;
+  title: string;
+  duration: string;
+  thumbnail: string;
+  completed: boolean;
+}
+
+const generateVideos = (subject: string, chapterTitle: string): Video[] => {
+  const thumbnails = [
+    'photo-1461749280684-dccba630e2f6', // Java programming
+    'photo-1486312338219-ce68d2c6f44d', // MacBook Pro
+    'photo-1649972904349-6e44c42644a7', // woman with laptop
+    'photo-1470071459604-3b5ec3a7fe05', // mountain
+    'photo-1501854140801-50d01698950b'  // green mountains
+  ];
+
+  return Array.from({ length: 9 }, (_, i) => ({
+    id: i + 1,
+    title: `${chapterTitle} - Lesson ${i + 1}: ${[
+      'Introduction', 'Basic Concepts', 'Advanced Topics', 
+      'Practice Problems', 'Real World Applications', 'Case Studies',
+      'Common Mistakes', 'Tips & Tricks', 'Summary & Review'
+    ][i]}`,
+    duration: `${Math.floor(Math.random() * 20) + 5}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+    thumbnail: thumbnails[i % thumbnails.length],
+    completed: Math.random() > 0.6
+  }));
+};
 
 const Index = () => {
+  const [selectedChapter, setSelectedChapter] = useState<{subject: string, chapter: Chapter} | null>(null);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+
+  const handleChapterSelect = (subject: string, chapter: Chapter) => {
+    setSelectedChapter({subject, chapter});
+    setVideos(generateVideos(subject, chapter.title));
+    setSelectedVideo(null);
+  };
+
+  const handleVideoSelect = (video: Video) => {
+    setSelectedVideo(video);
+  };
+
+  const handleCloseVideos = () => {
+    setSelectedChapter(null);
+    setVideos([]);
+    setSelectedVideo(null);
+  };
+
+  const handleMarkDone = (videoId: number) => {
+    setVideos(videos.map(v => 
+      v.id === videoId ? { ...v, completed: !v.completed } : v
+    ));
+    
+    if (selectedVideo?.id === videoId) {
+      setSelectedVideo({...selectedVideo, completed: !selectedVideo.completed});
+    }
+  };
+
+  const handleAskAI = () => {
+    alert('AI Assistant: How can I help you with this lesson? 🤖');
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex">
+      {/* Sidebar */}
+      <Sidebar 
+        onChapterSelect={handleChapterSelect}
+        selectedChapter={selectedChapter}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Top Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Profile and Stats */}
+            <div className="lg:col-span-1 space-y-6">
+              <UserProfile />
+              <WeeklyTimetable />
+              <DailyGoals />
+            </div>
+
+            {/* Main Content Area */}
+            <div className="lg:col-span-2">
+              {selectedChapter ? (
+                <VideoPlayer
+                  videos={videos}
+                  onVideoSelect={handleVideoSelect}
+                  selectedVideo={selectedVideo}
+                  onClose={handleCloseVideos}
+                  onMarkDone={handleMarkDone}
+                  onAskAI={handleAskAI}
+                />
+              ) : (
+                <div className="space-y-8">
+                  {/* Welcome Section */}
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-8 text-center">
+                    <h1 className="text-3xl font-bold mb-4">Welcome to EduFun! 🎓</h1>
+                    <p className="text-blue-100 text-lg">
+                      Your personalized learning journey starts here. Choose a subject from the sidebar to begin!
+                    </p>
+                  </div>
+
+                  {/* Fun Activities */}
+                  <FunActivities />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
