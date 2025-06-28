@@ -94,8 +94,8 @@ const Index = () => {
             {/* Profile and Stats */}
             <div className="lg:col-span-1 space-y-6">
               <UserProfile />
-              <WeeklyTimetable />
               <DailyGoals />
+              <WeeklyTimetable />
             </div>
 
             {/* Main Content Area */}
@@ -113,7 +113,7 @@ const Index = () => {
                 <div className="space-y-8">
                   {/* Welcome Section */}
                   <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-8 text-center">
-                    <h1 className="text-3xl font-bold mb-4">Welcome to EduFun! 🎓</h1>
+                    <h1 className="text-3xl font-bold mb-4">Welcome to Urban Tutor! 🎓</h1>
                     <p className="text-blue-100 text-lg">
                       Your personalized learning journey starts here. Choose a subject from the sidebar to begin!
                     </p>
