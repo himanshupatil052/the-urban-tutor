@@ -1,17 +1,24 @@
 
 import React, { useState } from 'react';
-import { User, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Shuffle, ChevronDown } from 'lucide-react';
 
-const avatars = [
-  'photo-1649972904349-6e44c42644a7', // woman with laptop
-  'photo-1486312338219-ce68d2c6f44d', // person with MacBook
-  'photo-1582562124811-c09040d0a901', // orange tabby cat
-  'photo-1535268647677-300dbf3d78d1'  // grey kitten
+const funnyAvatars = [
+  { id: 'cat1', emoji: '🐱', name: 'Cool Cat' },
+  { id: 'dog1', emoji: '🐶', name: 'Happy Dog' },
+  { id: 'panda', emoji: '🐼', name: 'Study Panda' },
+  { id: 'fox', emoji: '🦊', name: 'Smart Fox' },
+  { id: 'bear', emoji: '🐻', name: 'Teddy Bear' },
+  { id: 'monkey', emoji: '🐵', name: 'Cheeky Monkey' },
+  { id: 'lion', emoji: '🦁', name: 'Brave Lion' },
+  { id: 'tiger', emoji: '🐯', name: 'Tiger Student' },
+  { id: 'unicorn', emoji: '🦄', name: 'Magic Unicorn' },
+  { id: 'robot', emoji: '🤖', name: 'Study Bot' },
+  { id: 'alien', emoji: '👽', name: 'Space Learner' },
+  { id: 'wizard', emoji: '🧙‍♂️', name: 'Math Wizard' }
 ];
 
 const UserProfile: React.FC = () => {
-  const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(funnyAvatars[0]);
   const [showAvatars, setShowAvatars] = useState(false);
   const [userName] = useState('Alex');
 
@@ -22,6 +29,12 @@ const UserProfile: React.FC = () => {
     return 'Good evening';
   };
 
+  const getRandomAvatar = () => {
+    const randomAvatar = funnyAvatars[Math.floor(Math.random() * funnyAvatars.length)];
+    setSelectedAvatar(randomAvatar);
+    setShowAvatars(false);
+  };
+
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
       <div className="flex items-center gap-4">
@@ -30,36 +43,44 @@ const UserProfile: React.FC = () => {
             onClick={() => setShowAvatars(!showAvatars)}
             className="relative group"
           >
-            <img
-              src={`https://images.unsplash.com/${selectedAvatar}?w=80&h=80&fit=crop&crop=face`}
-              alt="Profile"
-              className="w-16 h-16 rounded-full object-cover border-3 border-blue-200 group-hover:border-blue-400 transition-colors"
-            />
-            <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-1 group-hover:bg-blue-600 transition-colors">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center text-3xl border-3 border-blue-200 group-hover:border-blue-400 transition-colors shadow-sm">
+              {selectedAvatar.emoji}
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-1 group-hover:bg-blue-600 transition-colors shadow-sm">
               <ChevronDown size={12} />
             </div>
           </button>
 
           {showAvatars && (
-            <div className="absolute top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-3 z-10 animate-scale-in">
-              <p className="text-sm font-medium text-gray-700 mb-3">Choose your avatar:</p>
-              <div className="grid grid-cols-2 gap-2">
-                {avatars.map((avatar, index) => (
+            <div className="absolute top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-20 w-80 animate-scale-in">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-medium text-gray-700">Choose your avatar:</p>
+                <button
+                  onClick={getRandomAvatar}
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-full transition-colors"
+                >
+                  <Shuffle size={12} />
+                  Random
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-4 gap-3">
+                {funnyAvatars.map((avatar) => (
                   <button
-                    key={avatar}
+                    key={avatar.id}
                     onClick={() => {
                       setSelectedAvatar(avatar);
                       setShowAvatars(false);
                     }}
-                    className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all hover:scale-105 ${
-                      selectedAvatar === avatar ? 'border-blue-500' : 'border-gray-200'
+                    className={`group relative w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex flex-col items-center justify-center transition-all hover:scale-105 hover:shadow-sm ${
+                      selectedAvatar.id === avatar.id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
                     }`}
+                    title={avatar.name}
                   >
-                    <img
-                      src={`https://images.unsplash.com/${avatar}?w=48&h=48&fit=crop&crop=face`}
-                      alt={`Avatar ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    <span className="text-2xl mb-1">{avatar.emoji}</span>
+                    <span className="text-xs text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-6 whitespace-nowrap bg-gray-800 text-white px-2 py-1 rounded text-[10px]">
+                      {avatar.name}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -68,10 +89,16 @@ const UserProfile: React.FC = () => {
         </div>
 
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-xl font-bold text-gray-800 mb-1">
             {getGreeting()}, {userName}! 👋
           </h3>
-          <p className="text-gray-600 text-sm">Ready to learn something new today?</p>
+          <p className="text-gray-600 text-sm mb-2">Ready to learn something new today?</p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Playing as:</span>
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+              {selectedAvatar.name}
+            </span>
+          </div>
         </div>
       </div>
     </div>

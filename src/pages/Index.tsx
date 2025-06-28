@@ -86,51 +86,41 @@ const Index = () => {
         selectedChapter={selectedChapter}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Top Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Left Side - Empty for now */}
-            <div className="lg:col-span-1">
+      {/* Main Content - Full Width */}
+      <div className="flex-1 p-4 lg:p-6">
+        <div className="w-full max-w-none">
+          {selectedChapter ? (
+            <VideoPlayer
+              videos={videos}
+              onVideoSelect={handleVideoSelect}
+              selectedVideo={selectedVideo}
+              onClose={handleCloseVideos}
+              onMarkDone={handleMarkDone}
+              onAskAI={handleAskAI}
+            />
+          ) : (
+            <div className="space-y-6">
+              {/* 1. Profile at the top */}
+              <UserProfile />
+
+              {/* 2. Welcome to Urban Tutor banner */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-6 lg:p-8 text-center">
+                <h1 className="text-2xl lg:text-3xl font-bold mb-4">Welcome to Urban Tutor! 🎓</h1>
+                <p className="text-blue-100 text-base lg:text-lg">
+                  Your personalized learning journey starts here. Choose a subject from the sidebar to begin!
+                </p>
+              </div>
+
+              {/* 3. Fun Activities */}
+              <FunActivities />
+
+              {/* 4. Daily Goals */}
+              <DailyGoals />
+
+              {/* 5. Weekly Timetable at the bottom */}
+              <WeeklyTimetable />
             </div>
-
-            {/* Right Panel - Main Content Area */}
-            <div className="lg:col-span-2">
-              {selectedChapter ? (
-                <VideoPlayer
-                  videos={videos}
-                  onVideoSelect={handleVideoSelect}
-                  selectedVideo={selectedVideo}
-                  onClose={handleCloseVideos}
-                  onMarkDone={handleMarkDone}
-                  onAskAI={handleAskAI}
-                />
-              ) : (
-                <div className="space-y-6">
-                  {/* 1. Profile at the top-right */}
-                  <UserProfile />
-
-                  {/* 2. Welcome to Urban Tutor banner */}
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-8 text-center">
-                    <h1 className="text-3xl font-bold mb-4">Welcome to Urban Tutor! 🎓</h1>
-                    <p className="text-blue-100 text-lg">
-                      Your personalized learning journey starts here. Choose a subject from the sidebar to begin!
-                    </p>
-                  </div>
-
-                  {/* 3. Fun Activities */}
-                  <FunActivities />
-
-                  {/* 4. Daily Goals */}
-                  <DailyGoals />
-
-                  {/* 5. Weekly Timetable at the bottom */}
-                  <WeeklyTimetable />
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
