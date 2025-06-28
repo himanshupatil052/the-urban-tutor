@@ -91,14 +91,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           {/* Top Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Profile and Stats */}
-            <div className="lg:col-span-1 space-y-6">
-              <UserProfile />
-              <DailyGoals />
-              <WeeklyTimetable />
+            {/* Left Side - Empty for now */}
+            <div className="lg:col-span-1">
             </div>
 
-            {/* Main Content Area */}
+            {/* Right Panel - Main Content Area */}
             <div className="lg:col-span-2">
               {selectedChapter ? (
                 <VideoPlayer
@@ -110,8 +107,11 @@ const Index = () => {
                   onAskAI={handleAskAI}
                 />
               ) : (
-                <div className="space-y-8">
-                  {/* Welcome Section */}
+                <div className="space-y-6">
+                  {/* 1. Profile at the top-right */}
+                  <UserProfile />
+
+                  {/* 2. Welcome to Urban Tutor banner */}
                   <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-8 text-center">
                     <h1 className="text-3xl font-bold mb-4">Welcome to Urban Tutor! 🎓</h1>
                     <p className="text-blue-100 text-lg">
@@ -119,8 +119,14 @@ const Index = () => {
                     </p>
                   </div>
 
-                  {/* Fun Activities */}
+                  {/* 3. Fun Activities */}
                   <FunActivities />
+
+                  {/* 4. Daily Goals */}
+                  <DailyGoals />
+
+                  {/* 5. Weekly Timetable at the bottom */}
+                  <WeeklyTimetable />
                 </div>
               )}
             </div>
