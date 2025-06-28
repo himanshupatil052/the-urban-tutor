@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import UserProfile from '@/components/UserProfile';
@@ -6,6 +5,8 @@ import WeeklyTimetable from '@/components/WeeklyTimetable';
 import DailyGoals from '@/components/DailyGoals';
 import FunActivities from '@/components/FunActivities';
 import VideoPlayer from '@/components/VideoPlayer';
+import ParentsSection from '@/components/ParentsSection';
+import { Users } from 'lucide-react';
 
 interface Chapter {
   id: number;
@@ -47,6 +48,7 @@ const Index = () => {
   const [selectedChapter, setSelectedChapter] = useState<{subject: string, chapter: Chapter} | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [showParentsSection, setShowParentsSection] = useState(false);
 
   const handleChapterSelect = (subject: string, chapter: Chapter) => {
     setSelectedChapter({subject, chapter});
@@ -100,10 +102,24 @@ const Index = () => {
             />
           ) : (
             <div className="space-y-6">
-              {/* 1. Profile at the top */}
-              <UserProfile />
+              {/* Header with Profile and Parents Section */}
+              <div className="flex items-start justify-between gap-4">
+                {/* Profile Section */}
+                <div className="flex-1">
+                  <UserProfile />
+                </div>
 
-              {/* 2. Welcome to Urban Tutor banner */}
+                {/* Parents Section Button */}
+                <button
+                  onClick={() => setShowParentsSection(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl flex items-center gap-2 transition-colors shadow-sm"
+                >
+                  <Users size={20} />
+                  <span className="font-medium">Parents Section</span>
+                </button>
+              </div>
+
+              {/* Welcome to Urban Tutor banner */}
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-6 lg:p-8 text-center">
                 <h1 className="text-2xl lg:text-3xl font-bold mb-4">Welcome to Urban Tutor! 🎓</h1>
                 <p className="text-blue-100 text-base lg:text-lg">
@@ -111,18 +127,24 @@ const Index = () => {
                 </p>
               </div>
 
-              {/* 3. Fun Activities */}
+              {/* Fun Activities */}
               <FunActivities />
 
-              {/* 4. Daily Goals */}
+              {/* Daily Goals */}
               <DailyGoals />
 
-              {/* 5. Weekly Timetable at the bottom */}
+              {/* Weekly Timetable at the bottom */}
               <WeeklyTimetable />
             </div>
           )}
         </div>
       </div>
+
+      {/* Parents Section Modal */}
+      <ParentsSection
+        isOpen={showParentsSection}
+        onClose={() => setShowParentsSection(false)}
+      />
     </div>
   );
 };
