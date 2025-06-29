@@ -7,6 +7,7 @@ import DailyGoals from '@/components/DailyGoals';
 import FunActivities from '@/components/FunActivities';
 import VideoPlayer from '@/components/VideoPlayer';
 import ParentsSection from '@/components/ParentsSection';
+import Achievements from '@/components/Achievements';
 import { Users } from 'lucide-react';
 
 interface Chapter {
