@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import UserProfile from '@/components/UserProfile';
@@ -7,7 +6,6 @@ import DailyGoals from '@/components/DailyGoals';
 import FunActivities from '@/components/FunActivities';
 import VideoPlayer from '@/components/VideoPlayer';
 import ParentsSection from '@/components/ParentsSection';
-import Achievements from '@/components/Achievements';
 import { Users } from 'lucide-react';
 
 interface Chapter {
@@ -128,9 +126,6 @@ const Index = () => {
                   Your personalized learning journey starts here. Choose a subject from the sidebar to begin!
                 </p>
               </div>
-
-              {/* My Achievements */}
-              <Achievements />
 
               {/* Fun Activities */}
               <FunActivities />

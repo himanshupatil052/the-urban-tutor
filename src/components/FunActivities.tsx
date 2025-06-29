@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Volume2 } from 'lucide-react';
-import TextToSpeech from './TextToSpeech';
+import { ArrowLeft } from 'lucide-react';
 
 interface Activity {
   id: string;
@@ -205,6 +204,189 @@ const FunActivities: React.FC = () => {
           ]
         }
       ]
+    },
+    {
+      id: 'math-puzzles',
+      title: 'Math Puzzles',
+      description: 'Challenge your mind with fun mathematical puzzles and brain teasers.',
+      image: '/images/math-puzzles.jpg',
+      chapters: [
+        {
+          id: 'number-games',
+          name: 'Number Games',
+          description: 'Play with numbers and discover amazing patterns.',
+          experiments: [
+            {
+              id: 'magic-square',
+              name: 'Magic Square Puzzle',
+              description: 'Create a 3x3 grid where all rows, columns, and diagonals add up to the same number.',
+              icon: '🔢',
+              difficulty: 'Medium',
+              duration: '20 minutes',
+              instructions: [
+                'Draw a 3x3 grid on paper.',
+                'Place numbers 1-9 so each row adds to 15.',
+                'Check that columns and diagonals also add to 15.'
+              ]
+            },
+            {
+              id: 'fibonacci',
+              name: 'Fibonacci Nature Hunt',
+              description: 'Find the Fibonacci sequence in nature around you.',
+              icon: '🌻',
+              difficulty: 'Easy',
+              duration: '30 minutes',
+              instructions: [
+                'Look for spirals in flowers, shells, or pinecones.',
+                'Count the spiral arms - they often follow Fibonacci numbers.',
+                'Take photos of your discoveries.'
+              ]
+            }
+          ]
+        },
+        {
+          id: 'geometry-fun',
+          name: 'Geometry Fun',
+          description: 'Explore shapes, angles, and spatial relationships.',
+          experiments: [
+            {
+              id: 'origami-math',
+              name: 'Origami Mathematics',
+              description: 'Fold paper to learn about angles, symmetry, and geometry.',
+              icon: '📐',
+              difficulty: 'Medium',
+              duration: '45 minutes',
+              instructions: [
+                'Start with a square piece of paper.',
+                'Follow origami instructions to create shapes.',
+                'Measure angles and identify geometric properties.'
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'physics-lab',
+      title: 'Physics Lab',
+      description: 'Discover the laws of physics through hands-on experiments.',
+      image: '/images/physics-lab.jpg',
+      chapters: [
+        {
+          id: 'motion-forces',
+          name: 'Motion and Forces',
+          description: 'Explore how objects move and the forces that affect them.',
+          experiments: [
+            {
+              id: 'pendulum',
+              name: 'Simple Pendulum',
+              description: 'Build a pendulum and study its motion patterns.',
+              icon: '⚖️',
+              difficulty: 'Easy',
+              duration: '25 minutes',
+              instructions: [
+                'Tie a weight to a string.',
+                'Hang it from a fixed point.',
+                'Measure how long it takes to swing back and forth.'
+              ]
+            },
+            {
+              id: 'friction',
+              name: 'Friction Investigation',
+              description: 'Test how different surfaces affect the movement of objects.',
+              icon: '🛷',
+              difficulty: 'Medium',
+              duration: '35 minutes',
+              instructions: [
+                'Gather objects with different textures.',
+                'Create ramps with various surface materials.',
+                'Time how fast objects slide down each ramp.'
+              ]
+            }
+          ]
+        },
+        {
+          id: 'light-sound',
+          name: 'Light and Sound',
+          description: 'Investigate the properties of light and sound waves.',
+          experiments: [
+            {
+              id: 'rainbow-maker',
+              name: 'Rainbow Maker',
+              description: 'Use a prism or water to split white light into colors.',
+              icon: '🌈',
+              difficulty: 'Easy',
+              duration: '15 minutes',
+              instructions: [
+                'Fill a glass with water.',
+                'Hold it up to sunlight.',
+                'Look for rainbows on the wall behind the glass.'
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'biology-explorer',
+      title: 'Biology Explorer',
+      description: 'Discover the wonders of life science and living organisms.',
+      image: '/images/biology-explorer.jpg',
+      chapters: [
+        {
+          id: 'plant-science',
+          name: 'Plant Science',
+          description: 'Learn about plants and how they grow.',
+          experiments: [
+            {
+              id: 'seed-germination',
+              name: 'Seed Germination Experiment',
+              description: 'Watch seeds sprout and grow into plants.',
+              icon: '🌱',
+              difficulty: 'Easy',
+              duration: '1 week',
+              instructions: [
+                'Place seeds on wet paper towels.',
+                'Keep them in a warm, dark place.',
+                'Check daily and record changes.'
+              ]
+            },
+            {
+              id: 'leaf-collection',
+              name: 'Leaf Collection Study',
+              description: 'Collect and classify different types of leaves.',
+              icon: '🍃',
+              difficulty: 'Easy',
+              duration: '1 hour',
+              instructions: [
+                'Collect leaves from different plants.',
+                'Compare their shapes, sizes, and textures.',
+                'Group them by similar characteristics.'
+              ]
+            }
+          ]
+        },
+        {
+          id: 'animal-behavior',
+          name: 'Animal Behavior',
+          description: 'Observe and study how animals behave in their environment.',
+          experiments: [
+            {
+              id: 'bird-watching',
+              name: 'Bird Behavior Study',
+              description: 'Observe local birds and record their behaviors.',
+              icon: '🐦',
+              difficulty: 'Medium',
+              duration: '2 hours',
+              instructions: [
+                'Find a good spot to observe birds.',
+                'Use binoculars if available.',
+                'Record what birds do, when, and where.'
+              ]
+            }
+          ]
+        }
+      ]
     }
   ];
 
@@ -290,10 +472,7 @@ const FunActivities: React.FC = () => {
                 onClick={() => handleExperimentClick(experiment)}
                 className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200 hover:border-purple-300 cursor-pointer transition-all hover:shadow-md group"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="text-3xl mb-3">{experiment.icon}</div>
-                  <TextToSpeech text={experiment.name} />
-                </div>
+                <div className="text-3xl mb-3">{experiment.icon}</div>
                 <h3 className="font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition-colors">
                   {experiment.name}
                 </h3>
@@ -324,31 +503,19 @@ const FunActivities: React.FC = () => {
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-xl">
             <div className="text-center mb-8">
               <div className="text-6xl mb-4">{selectedExperiment.icon}</div>
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <h3 className="text-2xl font-bold text-gray-800">{selectedExperiment.name}</h3>
-                <TextToSpeech text={selectedExperiment.name} size={20} />
-              </div>
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <p className="text-gray-600">{selectedExperiment.description}</p>
-                <TextToSpeech text={selectedExperiment.description} />
-              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">{selectedExperiment.name}</h3>
+              <p className="text-gray-600 mb-4">{selectedExperiment.description}</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl mb-6">
-              <div className="flex items-center gap-2 mb-4">
-                <h4 className="font-semibold text-gray-800">Instructions:</h4>
-                <TextToSpeech text="Follow these step-by-step instructions to complete the experiment" />
-              </div>
+              <h4 className="font-semibold text-gray-800 mb-4">Instructions:</h4>
               <div className="space-y-3">
                 {selectedExperiment.instructions.map((instruction, index) => (
                   <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                     <span className="bg-blue-500 text-white text-sm font-bold px-2 py-1 rounded-full min-w-[24px] text-center">
                       {index + 1}
                     </span>
-                    <div className="flex-1 flex items-center gap-2">
-                      <span className="text-gray-700">{instruction}</span>
-                      <TextToSpeech text={instruction} />
-                    </div>
+                    <span className="text-gray-700">{instruction}</span>
                   </div>
                 ))}
               </div>

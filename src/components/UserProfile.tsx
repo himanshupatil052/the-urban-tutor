@@ -1,7 +1,7 @@
+
 import React, { useState } from 'react';
-import { Shuffle, ChevronDown, Settings, BookCheck } from 'lucide-react';
+import { Shuffle, ChevronDown, Settings } from 'lucide-react';
 import StudentSettings from './StudentSettings';
-import QuizReview from './QuizReview';
 
 const funnyAvatars = [
   { id: 'cat1', emoji: '🐱', name: 'Cool Cat' },
@@ -22,7 +22,6 @@ const UserProfile: React.FC = () => {
   const [selectedAvatar, setSelectedAvatar] = useState(funnyAvatars[0]);
   const [showAvatars, setShowAvatars] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showQuizReview, setShowQuizReview] = useState(false);
   const [userName, setUserName] = useState('Alex');
 
   const getGreeting = () => {
@@ -81,16 +80,6 @@ const UserProfile: React.FC = () => {
                     >
                       <Settings size={12} />
                     </button>
-                    <button
-                      onClick={() => {
-                        setShowQuizReview(true);
-                        setShowAvatars(false);
-                      }}
-                      className="flex items-center gap-1 text-xs text-green-600 hover:text-green-800 bg-green-50 px-2 py-1 rounded-full transition-colors"
-                    >
-                      <BookCheck size={12} />
-                      Quiz Review
-                    </button>
                   </div>
                 </div>
                 
@@ -138,11 +127,6 @@ const UserProfile: React.FC = () => {
         onClose={() => setShowSettings(false)}
         currentName={userName}
         onSave={handleSettingsSave}
-      />
-
-      <QuizReview
-        isOpen={showQuizReview}
-        onClose={() => setShowQuizReview(false)}
       />
     </>
   );
