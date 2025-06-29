@@ -128,6 +128,9 @@ const Index = () => {
                 </p>
               </div>
 
+              {/* My Achievements */}
+              <Achievements />
+
               {/* Fun Activities */}
               <FunActivities />
 
