@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { FlaskConical, Calculator, Atom, Dna, ArrowLeft, Beaker } from 'lucide-react';
+import { FlaskConical, Calculator, Atom, Dna, ArrowLeft, Beaker, Home } from 'lucide-react';
 
 interface Activity {
   id: string;
@@ -90,6 +89,36 @@ const chemistryChapters: Chapter[] = [
       { id: 'functional-groups', title: 'Functional Groups Lab', description: 'Identify and create functional groups', type: 'mixing' },
       { id: 'isomer-challenge', title: 'Isomer Challenge', description: 'Find different arrangements of the same formula', type: 'puzzle' }
     ]
+  }
+];
+
+const physicsActivities = [
+  {
+    id: 'forces-motion',
+    title: 'Forces and Motion Lab',
+    description: 'Experiment with gravity, friction, and momentum in virtual scenarios',
+    type: 'simulation' as const
+  },
+  {
+    id: 'electricity-circuits',
+    title: 'Circuit Builder',
+    description: 'Build electrical circuits and observe current flow patterns',
+    type: 'building' as const
+  }
+];
+
+const biologyActivities = [
+  {
+    id: 'cell-explorer',
+    title: 'Cell Structure Explorer',
+    description: 'Navigate through plant and animal cells to learn their components',
+    type: 'exploration' as const
+  },
+  {
+    id: 'ecosystem-builder',
+    title: 'Ecosystem Balance Game',
+    description: 'Create balanced ecosystems by managing predator-prey relationships',
+    type: 'simulation' as const
   }
 ];
 
@@ -296,19 +325,160 @@ const MathPuzzle: React.FC = () => {
   );
 };
 
+const PhysicsSimulator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
+
+  if (selectedActivity) {
+    return (
+      <div className="bg-purple-50 rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => setSelectedActivity(null)}
+            className="text-purple-600 hover:text-purple-800 flex items-center gap-2"
+          >
+            <ArrowLeft size={20} />
+            Back to Physics Labs
+          </button>
+          <h3 className="text-xl font-bold text-purple-800">Physics Simulation</h3>
+        </div>
+        <div className="text-center p-8">
+          <p className="text-purple-700">Physics simulation coming soon! 🔬</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-purple-50 rounded-xl p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={onBack}
+          className="text-purple-600 hover:text-purple-800 flex items-center gap-2"
+        >
+          <ArrowLeft size={20} />
+          Back to Activities
+        </button>
+        <h3 className="text-2xl font-bold text-purple-800">Physics Lab</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {physicsActivities.map((activity) => (
+          <div
+            key={activity.id}
+            onClick={() => setSelectedActivity(activity.id)}
+            className="bg-white border border-purple-200 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all group hover:scale-105"
+          >
+            <div className="text-center">
+              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition-colors">
+                <Atom className="text-purple-600" size={24} />
+              </div>
+              
+              <h4 className="font-semibold text-gray-800 mb-2">{activity.title}</h4>
+              <p className="text-gray-600 text-sm mb-3">{activity.description}</p>
+              
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const BiologyExplorer: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
+
+  if (selectedActivity) {
+    return (
+      <div className="bg-orange-50 rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => setSelectedActivity(null)}
+            className="text-orange-600 hover:text-orange-800 flex items-center gap-2"
+          >
+            <ArrowLeft size={20} />
+            Back to Biology Labs
+          </button>
+          <h3 className="text-xl font-bold text-orange-800">Biology Explorer</h3>
+        </div>
+        <div className="text-center p-8">
+          <p className="text-orange-700">Biology exploration coming soon! 🧬</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-orange-50 rounded-xl p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={onBack}
+          className="text-orange-600 hover:text-orange-800 flex items-center gap-2"
+        >
+          <ArrowLeft size={20} />
+          Back to Activities
+        </button>
+        <h3 className="text-2xl font-bold text-orange-800">Biology Explorer</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {biologyActivities.map((activity) => (
+          <div
+            key={activity.id}
+            onClick={() => setSelectedActivity(activity.id)}
+            className="bg-white border border-orange-200 rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all group hover:scale-105"
+          >
+            <div className="text-center">
+              <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
+                <Dna className="text-orange-600" size={24} />
+              </div>
+              
+              <h4 className="font-semibold text-gray-800 mb-2">{activity.title}</h4>
+              <p className="text-gray-600 text-sm mb-3">{activity.description}</p>
+              
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const FunActivities: React.FC = () => {
   const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedExperiment, setSelectedExperiment] = useState<Experiment | null>(null);
 
+  const backToDashboard = () => {
+    setSelectedActivity(null);
+    setSelectedChapter(null);
+    setSelectedExperiment(null);
+  };
+
   const renderExperiment = () => {
     if (!selectedExperiment) return null;
     
     return (
-      <ChemistryExperiment
-        experiment={selectedExperiment}
-        onBack={() => setSelectedExperiment(null)}
-      />
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={backToDashboard}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Home size={16} />
+            Back to Dashboard
+          </button>
+        </div>
+        <ChemistryExperiment
+          experiment={selectedExperiment}
+          onBack={() => setSelectedExperiment(null)}
+        />
+      </div>
     );
   };
 
@@ -317,15 +487,24 @@ const FunActivities: React.FC = () => {
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSelectedActivity(null)}
+              className="text-green-600 hover:text-green-800 flex items-center gap-2"
+            >
+              <ArrowLeft size={20} />
+              Back to Activities
+            </button>
+            <h3 className="text-2xl font-bold text-green-800">Chemistry Lab Chapters</h3>
+          </div>
           <button
-            onClick={() => setSelectedActivity(null)}
-            className="text-green-600 hover:text-green-800 flex items-center gap-2"
+            onClick={backToDashboard}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
-            <ArrowLeft size={20} />
-            Back to Activities
+            <Home size={16} />
+            Back to Dashboard
           </button>
-          <h3 className="text-2xl font-bold text-green-800">Chemistry Lab Chapters</h3>
         </div>
 
         <div className="grid gap-4">
@@ -370,18 +549,27 @@ const FunActivities: React.FC = () => {
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            onClick={() => setSelectedChapter(null)}
-            className="text-green-600 hover:text-green-800 flex items-center gap-2"
-          >
-            <ArrowLeft size={20} />
-            Back to Chapters
-          </button>
-          <div>
-            <h3 className="text-2xl font-bold text-green-800">{selectedChapter.title}</h3>
-            <p className="text-green-600">{selectedChapter.description}</p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSelectedChapter(null)}
+              className="text-green-600 hover:text-green-800 flex items-center gap-2"
+            >
+              <ArrowLeft size={20} />
+              Back to Chapters
+            </button>
+            <div>
+              <h3 className="text-2xl font-bold text-green-800">{selectedChapter.title}</h3>
+              <p className="text-green-600">{selectedChapter.description}</p>
+            </div>
           </div>
+          <button
+            onClick={backToDashboard}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Home size={16} />
+            Back to Dashboard
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -428,7 +616,35 @@ const FunActivities: React.FC = () => {
     }
     
     if (selectedActivity === 'math-puzzles') {
-      return <MathPuzzle />;
+      return (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setSelectedActivity(null)}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              <ArrowLeft size={20} />
+              Back to Activities
+            </button>
+            <button
+              onClick={backToDashboard}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <Home size={16} />
+              Back to Dashboard
+            </button>
+          </div>
+          <MathPuzzle />
+        </div>
+      );
+    }
+    
+    if (selectedActivity === 'physics-sim') {
+      return <PhysicsSimulator onBack={() => setSelectedActivity(null)} />;
+    }
+    
+    if (selectedActivity === 'bio-explorer') {
+      return <BiologyExplorer onBack={() => setSelectedActivity(null)} />;
     }
     
     return null;

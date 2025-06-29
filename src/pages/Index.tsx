@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import UserProfile from '@/components/UserProfile';
-import WeeklyTimetable from '@/components/WeeklyTimetable';
+import EditableWeeklyTimetable from '@/components/EditableWeeklyTimetable';
 import DailyGoals from '@/components/DailyGoals';
 import FunActivities from '@/components/FunActivities';
 import VideoPlayer from '@/components/VideoPlayer';
@@ -133,8 +134,8 @@ const Index = () => {
               {/* Daily Goals */}
               <DailyGoals />
 
-              {/* Weekly Timetable at the bottom */}
-              <WeeklyTimetable />
+              {/* Editable Weekly Timetable at the bottom */}
+              <EditableWeeklyTimetable />
             </div>
           )}
         </div>

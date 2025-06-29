@@ -77,6 +77,14 @@ const Sidebar: React.FC<Props> = ({ onChapterSelect, selectedChapter }) => {
     setExpandedSubject(expandedSubject === subjectId ? null : subjectId);
   };
 
+  const handleToggleCollapse = () => {
+    setCollapsed(!collapsed);
+    // If expanding, clear any expanded subject to reset state
+    if (collapsed) {
+      setExpandedSubject(null);
+    }
+  };
+
   return (
     <div className={cn(
       "h-screen bg-white border-r border-gray-200 transition-all duration-300 overflow-y-auto",
@@ -84,7 +92,7 @@ const Sidebar: React.FC<Props> = ({ onChapterSelect, selectedChapter }) => {
     )}>
       <div className="p-4 border-b border-gray-100">
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={handleToggleCollapse}
           className="w-full flex items-center justify-between text-lg font-bold text-gray-800 hover:text-blue-600 transition-colors"
         >
           {!collapsed && <span>Subjects</span>}
@@ -100,7 +108,16 @@ const Sidebar: React.FC<Props> = ({ onChapterSelect, selectedChapter }) => {
           return (
             <div key={subject.id} className="mb-2">
               <button
-                onClick={() => toggleSubject(subject.id)}
+                onClick={() => {
+                  if (collapsed) {
+                    // If collapsed, first expand the sidebar
+                    setCollapsed(false);
+                    setExpandedSubject(subject.id);
+                  } else {
+                    // If expanded, toggle the subject
+                    toggleSubject(subject.id);
+                  }
+                }}
                 className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
               >
                 <div className={cn("p-2 rounded-lg text-white", subject.color)}>
