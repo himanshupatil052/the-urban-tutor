@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import UserProfile from '@/components/UserProfile';
@@ -22,28 +23,6 @@ interface Video {
   completed: boolean;
 }
 
-const generateVideos = (subject: string, chapterTitle: string): Video[] => {
-  const thumbnails = [
-    'photo-1461749280684-dccba630e2f6', // Java programming
-    'photo-1486312338219-ce68d2c6f44d', // MacBook Pro
-    'photo-1649972904349-6e44c42644a7', // woman with laptop
-    'photo-1470071459604-3b5ec3a7fe05', // mountain
-    'photo-1501854140801-50d01698950b'  // green mountains
-  ];
-
-  return Array.from({ length: 9 }, (_, i) => ({
-    id: i + 1,
-    title: `${chapterTitle} - Lesson ${i + 1}: ${[
-      'Introduction', 'Basic Concepts', 'Advanced Topics', 
-      'Practice Problems', 'Real World Applications', 'Case Studies',
-      'Common Mistakes', 'Tips & Tricks', 'Summary & Review'
-    ][i]}`,
-    duration: `${Math.floor(Math.random() * 20) + 5}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-    thumbnail: thumbnails[i % thumbnails.length],
-    completed: Math.random() > 0.6
-  }));
-};
-
 const Index = () => {
   const [selectedChapter, setSelectedChapter] = useState<{subject: string, chapter: Chapter} | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -52,7 +31,8 @@ const Index = () => {
 
   const handleChapterSelect = (subject: string, chapter: Chapter) => {
     setSelectedChapter({subject, chapter});
-    setVideos(generateVideos(subject, chapter.title));
+    // No videos available - will show message instead
+    setVideos([]);
     setSelectedVideo(null);
   };
 
@@ -92,14 +72,29 @@ const Index = () => {
       <div className="flex-1 p-4 lg:p-6">
         <div className="w-full max-w-none">
           {selectedChapter ? (
-            <VideoPlayer
-              videos={videos}
-              onVideoSelect={handleVideoSelect}
-              selectedVideo={selectedVideo}
-              onClose={handleCloseVideos}
-              onMarkDone={handleMarkDone}
-              onAskAI={handleAskAI}
-            />
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <div className="text-center">
+                <div className="text-6xl mb-4">📹</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  {selectedChapter.chapter.title}
+                </h2>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                  <h3 className="text-xl font-semibold text-yellow-800 mb-2">
+                    Oops! Out of videos. Coming soon! 🎬
+                  </h3>
+                  <p className="text-yellow-700">
+                    We're working hard to bring you amazing video content for this chapter. 
+                    Check back soon for exciting lessons!
+                  </p>
+                </div>
+                <button
+                  onClick={handleCloseVideos}
+                  className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition-colors"
+                >
+                  Back to Dashboard
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-6">
               {/* Header with Profile and Parents Section */}
