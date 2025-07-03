@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown, Book, Atom, FlaskConical, Dna } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,44 +22,72 @@ const subjects: Subject[] = [
     name: 'Mathematics',
     icon: Book,
     color: 'bg-blue-500',
-    chapters: Array.from({ length: 16 }, (_, i) => ({
-      id: i + 1,
-      title: `Chapter ${i + 1}: ${['Algebra', 'Geometry', 'Calculus', 'Statistics', 'Trigonometry', 'Probability', 'Functions', 'Equations'][i % 8]}`,
-      completed: Math.random() > 0.7
-    }))
+    chapters: [
+      {
+        id: 1,
+        title: 'The Mathematics of Taj Mahal',
+        completed: Math.random() > 0.7
+      },
+      {
+        id: 2,
+        title: 'Probability – You Can Predict Dice',
+        completed: Math.random() > 0.7
+      }
+    ]
   },
   {
     id: 'physics',
     name: 'Physics',
     icon: Atom,
     color: 'bg-purple-500',
-    chapters: Array.from({ length: 16 }, (_, i) => ({
-      id: i + 1,
-      title: `Chapter ${i + 1}: ${['Mechanics', 'Thermodynamics', 'Waves', 'Optics', 'Electricity', 'Magnetism', 'Modern Physics', 'Quantum'][i % 8]}`,
-      completed: Math.random() > 0.7
-    }))
+    chapters: [
+      {
+        id: 1,
+        title: 'What is Friction',
+        completed: Math.random() > 0.7
+      },
+      {
+        id: 2,
+        title: 'Characteristics of Sound Waves',
+        completed: Math.random() > 0.7
+      }
+    ]
   },
   {
     id: 'chemistry',
     name: 'Chemistry',
     icon: FlaskConical,
     color: 'bg-green-500',
-    chapters: Array.from({ length: 16 }, (_, i) => ({
-      id: i + 1,
-      title: `Chapter ${i + 1}: ${['Atomic Structure', 'Bonding', 'Reactions', 'Solutions', 'Acids & Bases', 'Organic', 'Kinetics', 'Equilibrium'][i % 8]}`,
-      completed: Math.random() > 0.7
-    }))
+    chapters: [
+      {
+        id: 1,
+        title: 'Why Does Flame Point Upward',
+        completed: Math.random() > 0.7
+      },
+      {
+        id: 2,
+        title: 'Can We Boil Water Without Heat',
+        completed: Math.random() > 0.7
+      }
+    ]
   },
   {
     id: 'biology',
     name: 'Biology',
     icon: Dna,
     color: 'bg-orange-500',
-    chapters: Array.from({ length: 16 }, (_, i) => ({
-      id: i + 1,
-      title: `Chapter ${i + 1}: ${['Cell Biology', 'Genetics', 'Evolution', 'Ecology', 'Anatomy', 'Physiology', 'Biochemistry', 'Molecular'][i % 8]}`,
-      completed: Math.random() > 0.7
-    }))
+    chapters: [
+      {
+        id: 1,
+        title: 'Can Our Blood Not Be Red in Color',
+        completed: Math.random() > 0.7
+      },
+      {
+        id: 2,
+        title: 'Nervous System – Control and Coordination',
+        completed: Math.random() > 0.7
+      }
+    ]
   }
 ];
 
