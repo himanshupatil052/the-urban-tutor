@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
 interface Activity {
@@ -32,11 +31,17 @@ const FunActivities: React.FC = () => {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedExperiment, setSelectedExperiment] = useState<Experiment | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleActivityClick = (activity: Activity) => {
     setSelectedActivity(activity);
     setSelectedChapter(null);
     setSelectedExperiment(null);
+    
+    // Auto-scroll to top when switching subjects
+    setTimeout(() => {
+      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const handleChapterClick = (chapter: Chapter) => {
@@ -58,10 +63,18 @@ const FunActivities: React.FC = () => {
     setSelectedExperiment(null);
   };
 
+  const handleStartExperiment = (experiment: Experiment) => {
+    setSelectedExperiment(experiment);
+    // Auto-scroll to show the simulation
+    setTimeout(() => {
+      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
   const activities: Activity[] = [
     {
-      id: 'biology-explorer',
-      title: 'Biology Explorer',
+      id: 'biology',
+      title: 'Biology',
       description: 'Discover the wonders of life science and living organisms.',
       image: 'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&h=200&fit=crop',
       chapters: [
@@ -379,7 +392,7 @@ const FunActivities: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div ref={containerRef} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
       {!selectedActivity ? (
         <div>
           <h2 className="text-xl font-bold text-gray-800 mb-4">Fun Labs 🚀</h2>
@@ -457,8 +470,7 @@ const FunActivities: React.FC = () => {
             {selectedChapter.experiments.map((experiment) => (
               <div
                 key={experiment.id}
-                onClick={() => handleExperimentClick(experiment)}
-                className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200 hover:border-purple-300 cursor-pointer transition-all hover:shadow-md group"
+                className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200 hover:border-purple-300 transition-all hover:shadow-md group"
               >
                 <img
                   src={experiment.thumbnail}
@@ -470,12 +482,18 @@ const FunActivities: React.FC = () => {
                   {experiment.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">{experiment.description}</p>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
                     {experiment.difficulty}
                   </span>
                   <span className="text-xs text-gray-500">{experiment.duration}</span>
                 </div>
+                <button
+                  onClick={() => handleStartExperiment(experiment)}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                >
+                  Start Experiment
+                </button>
               </div>
             ))}
           </div>
