@@ -34,6 +34,22 @@ const FunActivities: React.FC = () => {
   const [selectedExperiment, setSelectedExperiment] = useState<Experiment | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // State for interactive experiments
+  const [neuralSignalActive, setNeuralSignalActive] = useState(false);
+  const [microscopeZoom, setMicroscopeZoom] = useState('10x');
+  const [diceResults, setDiceResults] = useState<number[]>([]);
+  const [diceRolls, setDiceRolls] = useState(0);
+  const [diceSuccesses, setDiceSuccesses] = useState(0);
+  const [frictionSurface, setFrictionSurface] = useState('wood');
+  const [frictionActive, setFrictionActive] = useState(false);
+  const [soundFreq, setSoundFreq] = useState(440);
+  const [soundAmp, setSoundAmp] = useState(5);
+  const [soundPlaying, setSoundPlaying] = useState(false);
+  const [flameGravity, setFlameGravity] = useState('normal');
+  const [pressure, setPressure] = useState(1.0);
+  const [temperature, setTemperature] = useState(100);
+  const [isBoiling, setIsBoiling] = useState(false);
+
   const handleActivityClick = (activity: Activity) => {
     setSelectedActivity(activity);
     setSelectedChapter(null);
@@ -70,6 +86,44 @@ const FunActivities: React.FC = () => {
     setTimeout(() => {
       containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
+  };
+
+  // Interactive experiment functions
+  const startNeuralSignal = () => {
+    setNeuralSignalActive(true);
+    setTimeout(() => setNeuralSignalActive(false), 3000);
+  };
+
+  const changeMicroscopeZoom = (zoom: string) => {
+    setMicroscopeZoom(zoom);
+  };
+
+  const rollDice = () => {
+    const die1 = Math.floor(Math.random() * 6) + 1;
+    const die2 = Math.floor(Math.random() * 6) + 1;
+    const sum = die1 + die2;
+    setDiceResults([die1, die2]);
+    setDiceRolls(prev => prev + 1);
+    if (sum === 7) {
+      setDiceSuccesses(prev => prev + 1);
+    }
+  };
+
+  const startFrictionTest = () => {
+    setFrictionActive(true);
+    setTimeout(() => setFrictionActive(false), 2000);
+  };
+
+  const playSound = () => {
+    setSoundPlaying(true);
+    setTimeout(() => setSoundPlaying(false), 2000);
+  };
+
+  const adjustPressure = () => {
+    const newPressure = pressure > 0.3 ? 0.3 : 1.0;
+    setPressure(newPressure);
+    setTemperature(newPressure < 0.5 ? 60 : 100);
+    setIsBoiling(newPressure < 0.5);
   };
 
   const activities: Activity[] = [
@@ -223,16 +277,25 @@ const FunActivities: React.FC = () => {
             <h4 className="font-bold text-lg mb-4">Neural Signal Transmission</h4>
             <div className="bg-white p-4 rounded-lg mb-4">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+                <div className={`w-4 h-4 bg-blue-500 rounded-full ${neuralSignalActive ? 'animate-pulse' : ''}`}></div>
                 <div className="flex-1 h-2 bg-gray-200 rounded mx-2 relative overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded animate-pulse" style={{width: '0%', animation: 'signal 2s infinite'}}></div>
+                  <div 
+                    className={`h-full bg-blue-500 rounded transition-all duration-1000 ${neuralSignalActive ? 'w-full' : 'w-0'}`}
+                  ></div>
                 </div>
-                <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                <div className={`w-4 h-4 rounded-full ${neuralSignalActive ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
               </div>
               <p className="text-sm text-gray-600">Watch how electrical signals travel through neurons!</p>
+              <p className="text-xs text-blue-600 mt-2">
+                {neuralSignalActive ? 'Signal traveling... ⚡' : 'Ready to send signal'}
+              </p>
             </div>
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-              Start Neural Simulation
+            <button 
+              onClick={startNeuralSignal}
+              disabled={neuralSignalActive}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              {neuralSignalActive ? 'Signal Traveling...' : 'Start Neural Simulation'}
             </button>
           </div>
         );
@@ -243,16 +306,49 @@ const FunActivities: React.FC = () => {
             <h4 className="font-bold text-lg mb-4">Virtual Microscope</h4>
             <div className="bg-white p-4 rounded-lg mb-4 border-4 border-gray-800">
               <div className="w-full h-48 bg-pink-100 rounded-lg flex items-center justify-center relative">
-                <div className="w-8 h-8 bg-red-500 rounded-full opacity-80 absolute top-4 left-4"></div>
-                <div className="w-6 h-6 bg-red-400 rounded-full opacity-70 absolute top-8 right-8"></div>
-                <div className="w-7 h-7 bg-red-600 rounded-full opacity-90 absolute bottom-6 left-1/3"></div>
-                <p className="text-center text-gray-600">Red Blood Cells (10x magnification)</p>
+                {microscopeZoom === '10x' && (
+                  <>
+                    <div className="w-8 h-8 bg-red-500 rounded-full opacity-80 absolute top-4 left-4"></div>
+                    <div className="w-6 h-6 bg-red-400 rounded-full opacity-70 absolute top-8 right-8"></div>
+                    <div className="w-7 h-7 bg-red-600 rounded-full opacity-90 absolute bottom-6 left-1/3"></div>
+                  </>
+                )}
+                {microscopeZoom === '40x' && (
+                  <>
+                    <div className="w-12 h-12 bg-red-500 rounded-full opacity-80 absolute top-2 left-2"></div>
+                    <div className="w-10 h-10 bg-red-400 rounded-full opacity-70 absolute top-6 right-4"></div>
+                    <div className="w-11 h-11 bg-red-600 rounded-full opacity-90 absolute bottom-4 left-1/4"></div>
+                  </>
+                )}
+                {microscopeZoom === '100x' && (
+                  <>
+                    <div className="w-16 h-16 bg-red-500 rounded-full opacity-80 absolute -top-2 -left-2"></div>
+                    <div className="w-14 h-14 bg-red-400 rounded-full opacity-70 absolute top-2 right-0"></div>
+                    <div className="w-15 h-15 bg-red-600 rounded-full opacity-90 absolute bottom-2 left-1/5"></div>
+                  </>
+                )}
+                <p className="text-center text-gray-600">Red Blood Cells ({microscopeZoom} magnification)</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">10x</button>
-              <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">40x</button>
-              <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">100x</button>
+              <button 
+                onClick={() => changeMicroscopeZoom('10x')}
+                className={`px-4 py-2 rounded-lg ${microscopeZoom === '10x' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-red-700 hover:text-white`}
+              >
+                10x
+              </button>
+              <button 
+                onClick={() => changeMicroscopeZoom('40x')}
+                className={`px-4 py-2 rounded-lg ${microscopeZoom === '40x' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-red-700 hover:text-white`}
+              >
+                40x
+              </button>
+              <button 
+                onClick={() => changeMicroscopeZoom('100x')}
+                className={`px-4 py-2 rounded-lg ${microscopeZoom === '100x' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-red-700 hover:text-white`}
+              >
+                100x
+              </button>
             </div>
           </div>
         );
@@ -266,12 +362,21 @@ const FunActivities: React.FC = () => {
                 <rect x="100" y="120" width="100" height="80" fill="#f0f0f0" stroke="#000" strokeWidth="2"/>
                 <polygon points="150,120 100,80 200,80" fill="#e0e0e0" stroke="#000" strokeWidth="2"/>
                 <circle cx="150" cy="100" r="15" fill="#d0d0d0" stroke="#000" strokeWidth="2"/>
+                <rect x="80" y="150" width="20" height="50" fill="#c0c0c0" stroke="#000" strokeWidth="1"/>
+                <rect x="200" y="150" width="20" height="50" fill="#c0c0c0" stroke="#000" strokeWidth="1"/>
                 <text x="150" y="190" textAnchor="middle" className="text-xs">Taj Mahal Structure</text>
               </svg>
+              <p className="text-center text-sm text-gray-600 mt-2">
+                Geometric shapes: Rectangle (base), Triangle (roof), Circle (dome)
+              </p>
             </div>
             <div className="flex gap-2">
-              <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">Add Dome</button>
-              <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">Add Minarets</button>
+              <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                Add Dome ⭕
+              </button>
+              <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                Add Minarets 🏛️
+              </button>
             </div>
           </div>
         );
@@ -282,16 +387,38 @@ const FunActivities: React.FC = () => {
             <h4 className="font-bold text-lg mb-4">Dice Probability Simulator</h4>
             <div className="bg-white p-4 rounded-lg mb-4">
               <div className="flex justify-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-white border-2 border-black rounded-lg flex items-center justify-center text-2xl">🎲</div>
-                <div className="w-16 h-16 bg-white border-2 border-black rounded-lg flex items-center justify-center text-2xl">🎲</div>
+                <div className="w-16 h-16 bg-white border-2 border-black rounded-lg flex items-center justify-center text-2xl">
+                  {diceResults.length > 0 ? diceResults[0] : '🎲'}
+                </div>
+                <div className="w-16 h-16 bg-white border-2 border-black rounded-lg flex items-center justify-center text-2xl">
+                  {diceResults.length > 0 ? diceResults[1] : '🎲'}
+                </div>
               </div>
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Predicted: Sum of 7 (16.7% chance)</p>
-                <p className="text-sm text-gray-600">Rolls: 0 | Success: 0</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Predicted: Sum of 7 (16.7% chance)
+                  {diceResults.length > 0 && (
+                    <span className="ml-2 font-bold">
+                      Actual: {diceResults[0] + diceResults[1]} 
+                      {diceResults[0] + diceResults[1] === 7 ? ' ✅' : ' ❌'}
+                    </span>
+                  )}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Rolls: {diceRolls} | Successes: {diceSuccesses} 
+                  {diceRolls > 0 && (
+                    <span className="ml-1">
+                      ({((diceSuccesses / diceRolls) * 100).toFixed(1)}%)
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
-            <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
-              Roll Dice & Test Prediction
+            <button 
+              onClick={rollDice}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+            >
+              Roll Dice & Test Prediction 🎲
             </button>
           </div>
         );
@@ -302,19 +429,55 @@ const FunActivities: React.FC = () => {
             <h4 className="font-bold text-lg mb-4">Friction Surface Tester</h4>
             <div className="bg-white p-4 rounded-lg mb-4">
               <div className="mb-4">
-                <div className="w-full h-12 bg-gray-300 rounded relative">
-                  <div className="w-8 h-8 bg-blue-500 rounded absolute top-2 left-4 transition-all duration-1000" id="friction-block"></div>
+                <div className={`w-full h-12 rounded relative ${
+                  frictionSurface === 'ice' ? 'bg-blue-200' : 
+                  frictionSurface === 'wood' ? 'bg-yellow-700' : 'bg-gray-500'
+                }`}>
+                  <div 
+                    className={`w-8 h-8 bg-blue-500 rounded absolute top-2 transition-all duration-1000 ${
+                      frictionActive 
+                        ? (frictionSurface === 'ice' ? 'left-64' : frictionSurface === 'wood' ? 'left-32' : 'left-16')
+                        : 'left-4'
+                    }`}
+                  ></div>
                 </div>
-                <p className="text-center text-sm text-gray-600 mt-2">Wooden Block on Surface</p>
+                <p className="text-center text-sm text-gray-600 mt-2">
+                  Wooden Block on {frictionSurface.charAt(0).toUpperCase() + frictionSurface.slice(1)} Surface
+                  {frictionActive && (
+                    <span className="ml-2 text-blue-600">
+                      {frictionSurface === 'ice' ? '⚡ Low friction - Fast slide!' : 
+                       frictionSurface === 'wood' ? '🐌 Medium friction' : '🛑 High friction - Slow movement'}
+                    </span>
+                  )}
+                </p>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <button className="bg-yellow-500 text-white px-3 py-2 rounded text-xs">Ice</button>
-                <button className="bg-brown-500 text-white px-3 py-2 rounded text-xs">Wood</button>
-                <button className="bg-gray-600 text-white px-3 py-2 rounded text-xs">Concrete</button>
+                <button 
+                  onClick={() => setFrictionSurface('ice')}
+                  className={`px-3 py-2 rounded text-xs ${frictionSurface === 'ice' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                >
+                  ❄️ Ice
+                </button>
+                <button 
+                  onClick={() => setFrictionSurface('wood')}
+                  className={`px-3 py-2 rounded text-xs ${frictionSurface === 'wood' ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                >
+                  🪵 Wood
+                </button>
+                <button 
+                  onClick={() => setFrictionSurface('concrete')}
+                  className={`px-3 py-2 rounded text-xs ${frictionSurface === 'concrete' ? 'bg-gray-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                >
+                  🧱 Concrete
+                </button>
               </div>
             </div>
-            <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
-              Start Friction Test
+            <button 
+              onClick={startFrictionTest}
+              disabled={frictionActive}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+            >
+              {frictionActive ? 'Testing Friction...' : 'Start Friction Test'}
             </button>
           </div>
         );
@@ -325,16 +488,54 @@ const FunActivities: React.FC = () => {
             <h4 className="font-bold text-lg mb-4">Sound Wave Visualizer</h4>
             <div className="bg-white p-4 rounded-lg mb-4">
               <svg width="300" height="100" className="mx-auto">
-                <path d="M0,50 Q75,10 150,50 T300,50" stroke="#06b6d4" strokeWidth="3" fill="none"/>
-                <text x="150" y="90" textAnchor="middle" className="text-xs">Sound Wave Pattern</text>
+                <path 
+                  d={`M0,50 ${Array.from({length: 30}, (_, i) => {
+                    const x = i * 10;
+                    const y = 50 + Math.sin((x / 50) * soundFreq / 100) * soundAmp;
+                    return `L${x},${y}`;
+                  }).join(' ')}`}
+                  stroke="#06b6d4" 
+                  strokeWidth={soundPlaying ? "4" : "2"} 
+                  fill="none"
+                  className={soundPlaying ? "animate-pulse" : ""}
+                />
+                <text x="150" y="90" textAnchor="middle" className="text-xs">
+                  Sound Wave Pattern {soundPlaying ? '🔊' : '🔇'}
+                </text>
               </svg>
               <div className="mt-4 flex justify-center gap-4">
-                <label className="text-sm">Frequency: <input type="range" min="100" max="1000" className="ml-2"/></label>
-                <label className="text-sm">Amplitude: <input type="range" min="1" max="10" className="ml-2"/></label>
+                <label className="text-sm">
+                  Frequency: 
+                  <input 
+                    type="range" 
+                    min="100" 
+                    max="1000" 
+                    value={soundFreq}
+                    onChange={(e) => setSoundFreq(Number(e.target.value))}
+                    className="ml-2"
+                  />
+                  <span className="ml-1">{soundFreq}Hz</span>
+                </label>
+                <label className="text-sm">
+                  Amplitude: 
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="10" 
+                    value={soundAmp}
+                    onChange={(e) => setSoundAmp(Number(e.target.value))}
+                    className="ml-2"
+                  />
+                  <span className="ml-1">{soundAmp}</span>
+                </label>
               </div>
             </div>
-            <button className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700">
-              Generate Sound & Visualize
+            <button 
+              onClick={playSound}
+              disabled={soundPlaying}
+              className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 disabled:opacity-50"
+            >
+              {soundPlaying ? '🔊 Playing Sound...' : '🎵 Generate Sound & Visualize'}
             </button>
           </div>
         );
@@ -347,18 +548,37 @@ const FunActivities: React.FC = () => {
               <div className="flex justify-center">
                 <div className="relative">
                   <div className="w-4 h-16 bg-gray-600 rounded-t"></div>
-                  <div className="w-8 h-12 bg-orange-400 rounded-full absolute -top-6 -left-2 animate-pulse"></div>
-                  <div className="w-6 h-8 bg-red-500 rounded-full absolute -top-8 -left-1 animate-pulse"></div>
+                  <div className={`w-8 h-12 bg-orange-400 rounded-full absolute -top-6 -left-2 ${
+                    flameGravity === 'zero' ? 'rounded-full' : 'rounded-full transform -rotate-12'
+                  } animate-pulse`}></div>
+                  <div className={`w-6 h-8 bg-red-500 rounded-full absolute -top-8 -left-1 ${
+                    flameGravity === 'zero' ? 'rounded-full' : 'rounded-full transform -rotate-12'
+                  } animate-pulse`}></div>
                 </div>
               </div>
-              <p className="text-center text-sm text-gray-600 mt-4">Observe how flames always point upward due to buoyancy</p>
+              <p className="text-center text-sm text-gray-600 mt-4">
+                {flameGravity === 'normal' 
+                  ? 'Flames point upward due to buoyancy - hot gases rise! 🔥⬆️'
+                  : 'In zero gravity, flames form spheres! 🔥⭕'
+                }
+              </p>
               <div className="mt-4 flex justify-center gap-2">
-                <button className="bg-orange-500 text-white px-3 py-1 rounded text-xs">Normal Gravity</button>
-                <button className="bg-orange-500 text-white px-3 py-1 rounded text-xs">Zero Gravity</button>
+                <button 
+                  onClick={() => setFlameGravity('normal')}
+                  className={`px-3 py-1 rounded text-xs ${flameGravity === 'normal' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                >
+                  🌍 Normal Gravity
+                </button>
+                <button 
+                  onClick={() => setFlameGravity('zero')}
+                  className={`px-3 py-1 rounded text-xs ${flameGravity === 'zero' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                >
+                  🚀 Zero Gravity
+                </button>
               </div>
             </div>
             <button className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700">
-              Start Flame Experiment
+              Start Flame Experiment 🔥
             </button>
           </div>
         );
@@ -371,18 +591,32 @@ const FunActivities: React.FC = () => {
               <div className="flex justify-center">
                 <div className="relative w-24 h-32 border-2 border-gray-600 rounded-lg">
                   <div className="absolute bottom-0 w-full h-16 bg-blue-300 rounded-b-lg"></div>
-                  <div className="absolute top-2 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '10%'}}></div>
-                  <div className="absolute top-4 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '70%', animationDelay: '0.5s'}}></div>
+                  {isBoiling && (
+                    <>
+                      <div className="absolute top-2 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '10%'}}></div>
+                      <div className="absolute top-4 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '70%', animationDelay: '0.5s'}}></div>
+                      <div className="absolute top-6 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '40%', animationDelay: '1s'}}></div>
+                    </>
+                  )}
                 </div>
               </div>
-              <p className="text-center text-sm text-gray-600 mt-4">Water boiling at reduced pressure</p>
+              <p className="text-center text-sm text-gray-600 mt-4">
+                {isBoiling ? 'Water boiling at reduced pressure! 💨' : 'Water at normal pressure'}
+              </p>
               <div className="mt-2 text-center">
-                <span className="text-xs bg-blue-100 px-2 py-1 rounded">Pressure: 0.5 atm</span>
-                <span className="text-xs bg-red-100 px-2 py-1 rounded ml-2">Temp: 60°C</span>
+                <span className={`text-xs px-2 py-1 rounded ${pressure < 0.5 ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                  Pressure: {pressure.toFixed(1)} atm
+                </span>
+                <span className={`text-xs px-2 py-1 rounded ml-2 ${temperature < 80 ? 'bg-red-100' : 'bg-orange-100'}`}>
+                  Temp: {temperature}°C
+                </span>
               </div>
             </div>
-            <button className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
-              Adjust Pressure & Watch
+            <button 
+              onClick={adjustPressure}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+            >
+              {pressure > 0.5 ? 'Reduce Pressure & Watch 📉' : 'Reset to Normal Pressure 📈'}
             </button>
           </div>
         );
