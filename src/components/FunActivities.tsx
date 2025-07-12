@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
@@ -76,7 +77,7 @@ const FunActivities: React.FC = () => {
       id: 'biology',
       title: 'Biology',
       description: 'Discover the wonders of life science and living organisms.',
-      image: 'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&h=200&fit=crop',
+      image: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400&h=200&fit=crop',
       chapters: [
         {
           id: 'interactive-biology',
@@ -111,7 +112,7 @@ const FunActivities: React.FC = () => {
       id: 'math-puzzles',
       title: 'Mathematics',
       description: 'Challenge your mind with interactive mathematical experiments.',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=200&fit=crop',
+      image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=200&fit=crop',
       chapters: [
         {
           id: 'interactive-math',
@@ -146,7 +147,7 @@ const FunActivities: React.FC = () => {
       id: 'physics-lab',
       title: 'Physics',
       description: 'Discover the laws of physics through interactive experiments.',
-      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=200&fit=crop',
+      image: 'https://images.unsplash.com/photo-1636953056323-9c09fdd74fa6?w=400&h=200&fit=crop',
       chapters: [
         {
           id: 'interactive-physics',
@@ -181,7 +182,7 @@ const FunActivities: React.FC = () => {
       id: 'chemistry-lab',
       title: 'Chemistry',
       description: 'Explore exciting chemistry through interactive simulations.',
-      image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=200&fit=crop',
+      image: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?w=400&h=200&fit=crop',
       chapters: [
         {
           id: 'interactive-chemistry',
