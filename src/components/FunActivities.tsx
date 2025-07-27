@@ -1,762 +1,539 @@
-
-import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
-
-interface Activity {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  chapters: Chapter[];
-}
-
-interface Chapter {
-  id: string;
-  name: string;
-  description: string;
-  experiments: Experiment[];
-}
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { 
+  Microscope, 
+  FlaskConical, 
+  Zap, 
+  Calculator,
+  Play,
+  CheckCircle,
+  Target,
+  Lightbulb,
+  BookOpen,
+  Camera,
+  Upload
+} from 'lucide-react';
 
 interface Experiment {
   id: string;
-  name: string;
-  description: string;
-  icon: string;
-  difficulty: string;
-  duration: string;
-  thumbnail: string;
-  interactive: boolean;
+  title: string;
+  storyline: string;
+  objective: string;
+  materials: string[];
+  instructions: string[];
+  howToDo: string;
+  explanation: string;
+  interactiveType: 'quiz' | 'simulation' | 'input' | 'video';
 }
 
 const FunActivities: React.FC = () => {
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedExperiment, setSelectedExperiment] = useState<Experiment | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [experimentProgress, setExperimentProgress] = useState<{ [key: string]: number }>({});
+  const [quizAnswers, setQuizAnswers] = useState<{ [key: string]: string }>({});
+  const [simulationStates, setSimulationStates] = useState<{ [key: string]: any }>({});
 
-  // State for interactive experiments
-  const [neuralSignalActive, setNeuralSignalActive] = useState(false);
-  const [microscopeZoom, setMicroscopeZoom] = useState('10x');
-  const [diceResults, setDiceResults] = useState<number[]>([]);
-  const [diceRolls, setDiceRolls] = useState(0);
-  const [diceSuccesses, setDiceSuccesses] = useState(0);
-  const [frictionSurface, setFrictionSurface] = useState('wood');
-  const [frictionActive, setFrictionActive] = useState(false);
-  const [soundFreq, setSoundFreq] = useState(440);
-  const [soundAmp, setSoundAmp] = useState(5);
-  const [soundPlaying, setSoundPlaying] = useState(false);
-  const [flameGravity, setFlameGravity] = useState('normal');
-  const [pressure, setPressure] = useState(1.0);
-  const [temperature, setTemperature] = useState(100);
-  const [isBoiling, setIsBoiling] = useState(false);
-
-  const handleActivityClick = (activity: Activity) => {
-    setSelectedActivity(activity);
-    setSelectedChapter(null);
-    setSelectedExperiment(null);
-    
-    // Auto-scroll to top when switching subjects
-    setTimeout(() => {
-      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+  const experiments: { [key: string]: Experiment[] } = {
+    biology: [
+      {
+        id: 'dna-extraction',
+        title: 'DNA Extraction from a Banana',
+        storyline: "You're a young scientist working for \"FunLabs Bio Research.\" A strange plant mutation was discovered. Your job is to extract its DNA and find out why it's changing.",
+        objective: 'Understand DNA in cells; learn basic molecular biology skills',
+        materials: ['Banana', 'Dish soap', 'Salt', 'Warm water', 'Rubbing alcohol', 'Ziplock bag', 'Coffee filter', 'Glass'],
+        instructions: [
+          'Mash the banana in a ziplock bag',
+          'Add soap, salt, and warm water to the bag',
+          'Mix gently for 2 minutes',
+          'Filter the mixture through coffee filter',
+          'Slowly add cold rubbing alcohol',
+          'Observe the DNA strands forming at the surface'
+        ],
+        howToDo: 'Use in-app video demo + quiz + allow photo uploads',
+        explanation: 'Soap breaks cell walls, salt clumps DNA together, and alcohol makes DNA visible as it separates from water.',
+        interactiveType: 'quiz'
+      },
+      {
+        id: 'ph-indicator',
+        title: 'pH Indicator Using Red Cabbage',
+        storyline: "You've joined a water testing agency! But test kits are missing. Can you make your own pH indicator?",
+        objective: 'Understand acids/bases and pH using natural indicators',
+        materials: ['Red cabbage', 'Hot water', 'Lemon juice', 'Vinegar', 'Baking soda', 'Soap', 'Clear cups'],
+        instructions: [
+          'Chop red cabbage and soak in hot water',
+          'Strain to get purple cabbage juice',
+          'Pour juice into separate cups',
+          'Add different substances to each cup',
+          'Observe color changes',
+          'Record pH levels based on colors'
+        ],
+        howToDo: 'Simulate color changes; add quiz to predict outcome',
+        explanation: 'Anthocyanins in cabbage change color with pH - red for acids, green for bases.',
+        interactiveType: 'simulation'
+      },
+      {
+        id: 'yeast-fermentation',
+        title: 'Yeast + Sugar = CO₂',
+        storyline: 'A soda company needs your help. Which sugar gives the best fizz using yeast?',
+        objective: 'Learn fermentation, gas production, reaction observation',
+        materials: ['Active yeast', 'Different sugars', 'Warm water', 'Balloons', 'Plastic bottles'],
+        instructions: [
+          'Add yeast to warm water in bottles',
+          'Add different types of sugar to each bottle',
+          'Attach balloons to bottle openings',
+          'Wait and observe balloon inflation',
+          'Measure and compare results',
+          'Record which sugar works best'
+        ],
+        howToDo: 'Simulate balloon inflation based on sugar used + quiz',
+        explanation: 'Yeast consumes sugar and produces CO₂ gas, which inflates the balloon. Different sugars ferment at different rates.',
+        interactiveType: 'simulation'
+      }
+    ],
+    chemistry: [
+      {
+        id: 'density-tower',
+        title: 'Liquid Density Tower',
+        storyline: "You're a chemist creating a rainbow potion for a magic show. Layer liquids by density!",
+        objective: 'Understand density and liquid properties',
+        materials: ['Honey', 'Corn syrup', 'Dish soap', 'Water', 'Vegetable oil', 'Rubbing alcohol', 'Food coloring'],
+        instructions: [
+          'Pour honey into bottom of tall container',
+          'Slowly layer corn syrup on top',
+          'Add colored water carefully',
+          'Pour oil slowly down the side',
+          'Top with colored alcohol',
+          'Observe the beautiful density tower'
+        ],
+        howToDo: 'Interactive layer builder with drag-and-drop liquids',
+        explanation: 'Liquids with higher density sink below those with lower density, creating distinct layers.',
+        interactiveType: 'simulation'
+      },
+      {
+        id: 'color-changing-milk',
+        title: 'Dancing Colors in Milk',
+        storyline: 'You discovered a magic milk that changes colors! Investigate this phenomenon as a food scientist.',
+        objective: 'Learn about surface tension and molecular interactions',
+        materials: ['Whole milk', 'Food coloring', 'Cotton swabs', 'Liquid dish soap'],
+        instructions: [
+          'Pour milk into a shallow dish',
+          'Add drops of different food coloring',
+          'Dip cotton swab in dish soap',
+          'Touch the soapy swab to the milk',
+          'Watch the colors dance and swirl',
+          'Try different locations and observe patterns'
+        ],
+        howToDo: 'Animated simulation of color movement patterns',
+        explanation: 'Soap breaks surface tension and interacts with fat molecules, causing the colorful dance effect.',
+        interactiveType: 'simulation'
+      },
+      {
+        id: 'crystal-garden',
+        title: 'Crystal Garden Growth',
+        storyline: 'You\'re growing crystals for a jewelry exhibition. Create the most beautiful crystal formations!',
+        objective: 'Understand crystallization and solution concentration',
+        materials: ['Salt or sugar', 'Hot water', 'String', 'Pencil', 'Glass jar', 'Food coloring'],
+        instructions: [
+          'Dissolve salt/sugar in hot water until saturated',
+          'Tie string to pencil, lower into solution',
+          'Add food coloring for beauty',
+          'Leave undisturbed for several days',
+          'Observe crystal formation daily',
+          'Document growth patterns'
+        ],
+        howToDo: 'Time-lapse crystal growth simulation with progress tracking',
+        explanation: 'As water evaporates, dissolved minerals form organized crystal structures due to molecular attraction.',
+        interactiveType: 'simulation'
+      }
+    ],
+    physics: [
+      {
+        id: 'balloon-rocket',
+        title: 'Balloon Rocket',
+        storyline: "You've joined NASA's Junior Propulsion Team. Test your rocket design!",
+        objective: 'Learn Newton\'s Third Law of Motion',
+        materials: ['Balloon', 'String', 'Straw', 'Tape'],
+        instructions: [
+          'Thread string through straw',
+          'Stretch string across room and secure',
+          'Inflate balloon but don\'t tie it',
+          'Tape balloon to straw',
+          'Release balloon and observe motion',
+          'Measure distance traveled'
+        ],
+        howToDo: 'Predict balloon size performance, quiz after demo',
+        explanation: 'Air rushing out pushes balloon forward - Newton\'s third law: for every action, there\'s an equal and opposite reaction.',
+        interactiveType: 'quiz'
+      },
+      {
+        id: 'electromagnet',
+        title: 'Simple Electromagnet',
+        storyline: 'You\'re in the 1800s trying to send a telegraph. Build an electromagnet!',
+        objective: 'Learn relationship between electricity and magnetism',
+        materials: ['Iron nail', 'Copper wire', 'Battery', 'Paper clips'],
+        instructions: [
+          'Wrap copper wire around iron nail',
+          'Leave wire ends free',
+          'Connect wire ends to battery terminals',
+          'Test magnetism with paper clips',
+          'Count how many clips it attracts',
+          'Disconnect battery and test again'
+        ],
+        howToDo: 'Video demo with magnetic field visualization',
+        explanation: 'Electric current flowing through wire creates a magnetic field, turning the nail into a temporary magnet.',
+        interactiveType: 'simulation'
+      },
+      {
+        id: 'refraction-pencil',
+        title: 'Refraction Pencil Illusion',
+        storyline: 'You\'re an optical illusionist. Can you "break" a pencil using just water?',
+        objective: 'Understand light refraction and optical illusions',
+        materials: ['Pencil', 'Clear glass', 'Water'],
+        instructions: [
+          'Place pencil in empty glass',
+          'Observe pencil from the side',
+          'Slowly pour water into glass',
+          'Watch pencil appear to bend',
+          'Move viewing angle and observe changes',
+          'Try with different objects'
+        ],
+        howToDo: 'Show zoom animation of light bending, quiz on why it looks broken',
+        explanation: 'Light travels slower in water than air, causing it to bend (refract) and create the illusion of a broken pencil.',
+        interactiveType: 'simulation'
+      }
+    ],
+    mathematics: [
+      {
+        id: 'parabola-toss',
+        title: 'Parabola Basketball Toss',
+        storyline: 'You\'re designing a basketball game. Can you track and predict the ball\'s perfect curve?',
+        objective: 'Understand parabolas and projectile motion in real life',
+        materials: ['Basketball', 'Phone/camera', 'Graph paper', 'Measuring tape'],
+        instructions: [
+          'Set up measurement grid on wall',
+          'Record ball toss with slow-motion video',
+          'Plot height vs horizontal distance points',
+          'Connect points to see parabolic curve',
+          'Try different throwing angles',
+          'Predict optimal angle for scoring'
+        ],
+        howToDo: 'Let students trace motion on screen or input data points',
+        explanation: 'Projectile motion follows a parabolic path described by quadratic equations: y = ax² + bx + c',
+        interactiveType: 'input'
+      },
+      {
+        id: 'pi-discovery',
+        title: 'Pi Discovery with Circles',
+        storyline: 'A time-traveling mathematician challenges you to prove that π is the same for all circles!',
+        objective: 'Discover that π = Circumference ÷ Diameter for any circle',
+        materials: ['String', 'Ruler', 'Various circular objects', 'Calculator'],
+        instructions: [
+          'Measure diameter of circular object',
+          'Wrap string around circumference',
+          'Measure the string length',
+          'Calculate circumference ÷ diameter',
+          'Repeat with different sized circles',
+          'Observe that ratio is always ~3.14159'
+        ],
+        howToDo: 'Input measurement numbers, auto-calculate Pi, show animation of results',
+        explanation: 'The ratio of circumference to diameter is constant for all circles, defining the mathematical constant π ≈ 3.14159',
+        interactiveType: 'input'
+      },
+      {
+        id: 'dice-probability',
+        title: 'Dice & Probability Candy Graph',
+        storyline: 'You\'re creating a board game. Use candy pieces to discover which dice sums are most likely!',
+        objective: 'Learn probability distribution and frequency analysis',
+        materials: ['Two dice', 'Candy pieces or colored markers', 'Graph chart', 'Pencil'],
+        instructions: [
+          'Create chart with sums 2-12',
+          'Roll two dice 50 times',
+          'Place candy piece for each sum rolled',
+          'Build candy bar graph',
+          'Identify most and least common sums',
+          'Calculate probability of each sum'
+        ],
+        howToDo: 'Digital dice roller, interactive graph builder, quiz on most likely sums',
+        explanation: 'Some sums (like 7) have more combinations than others, making them more probable. This introduces statistical thinking.',
+        interactiveType: 'simulation'
+      }
+    ]
   };
 
-  const handleChapterClick = (chapter: Chapter) => {
-    setSelectedChapter(chapter);
-    setSelectedExperiment(null);
+  const subjectIcons = {
+    biology: <Microscope className="w-6 h-6" />,
+    chemistry: <FlaskConical className="w-6 h-6" />,
+    physics: <Zap className="w-6 h-6" />,
+    mathematics: <Calculator className="w-6 h-6" />
   };
 
-  const handleBackToDashboard = () => {
-    setSelectedActivity(null);
-    setSelectedChapter(null);
-    setSelectedExperiment(null);
-  };
-
-  const handleExperimentClick = (experiment: Experiment) => {
-    setSelectedExperiment(experiment);
-  };
-
-  const handleBackToChapter = () => {
-    setSelectedExperiment(null);
+  const subjectColors = {
+    biology: 'from-green-500 to-emerald-600',
+    chemistry: 'from-blue-500 to-cyan-600',
+    physics: 'from-purple-500 to-violet-600',
+    mathematics: 'from-orange-500 to-red-600'
   };
 
   const handleStartExperiment = (experiment: Experiment) => {
     setSelectedExperiment(experiment);
-    // Auto-scroll to show the simulation
-    setTimeout(() => {
-      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    setExperimentProgress({ ...experimentProgress, [experiment.id]: 0 });
   };
 
-  // Interactive experiment functions
-  const startNeuralSignal = () => {
-    setNeuralSignalActive(true);
-    setTimeout(() => setNeuralSignalActive(false), 3000);
+  const handleProgressStep = (experimentId: string) => {
+    const currentProgress = experimentProgress[experimentId] || 0;
+    setExperimentProgress({ ...experimentProgress, [experimentId]: Math.min(100, currentProgress + 20) });
   };
 
-  const changeMicroscopeZoom = (zoom: string) => {
-    setMicroscopeZoom(zoom);
-  };
-
-  const rollDice = () => {
-    const die1 = Math.floor(Math.random() * 6) + 1;
-    const die2 = Math.floor(Math.random() * 6) + 1;
-    const sum = die1 + die2;
-    setDiceResults([die1, die2]);
-    setDiceRolls(prev => prev + 1);
-    if (sum === 7) {
-      setDiceSuccesses(prev => prev + 1);
-    }
-  };
-
-  const startFrictionTest = () => {
-    setFrictionActive(true);
-    setTimeout(() => setFrictionActive(false), 2000);
-  };
-
-  const playSound = () => {
-    setSoundPlaying(true);
-    setTimeout(() => setSoundPlaying(false), 2000);
-  };
-
-  const adjustPressure = () => {
-    const newPressure = pressure > 0.3 ? 0.3 : 1.0;
-    setPressure(newPressure);
-    setTemperature(newPressure < 0.5 ? 60 : 100);
-    setIsBoiling(newPressure < 0.5);
-  };
-
-  const activities: Activity[] = [
-    {
-      id: 'biology',
-      title: 'Biology',
-      description: 'Discover the wonders of life science and living organisms.',
-      image: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400&h=200&fit=crop',
-      chapters: [
-        {
-          id: 'interactive-biology',
-          name: 'Interactive Biology Experiments',
-          description: 'Explore life science through interactive simulations.',
-          experiments: [
-            {
-              id: 'brain-signals',
-              name: 'How Our Brain Sends Signals',
-              description: 'Interactive simulation of neural signal transmission.',
-              icon: '🧠',
-              difficulty: 'Medium',
-              duration: '20 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop',
-              interactive: true
-            },
-            {
-              id: 'blood-cells',
-              name: 'Observe Red Blood Cells Under a Microscope',
-              description: 'Virtual microscope to examine blood cell structure.',
-              icon: '🔬',
-              difficulty: 'Easy',
-              duration: '15 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=300&h=200&fit=crop',
-              interactive: true
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'math-puzzles',
-      title: 'Mathematics',
-      description: 'Challenge your mind with interactive mathematical experiments.',
-      image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=200&fit=crop',
-      chapters: [
-        {
-          id: 'interactive-math',
-          name: 'Interactive Mathematics',
-          description: 'Explore mathematical concepts through hands-on simulations.',
-          experiments: [
-            {
-              id: 'taj-mahal-geometry',
-              name: 'Building the Taj Mahal with Geometry',
-              description: 'Interactive geometric construction of the Taj Mahal.',
-              icon: '🕌',
-              difficulty: 'Hard',
-              duration: '30 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=300&h=200&fit=crop',
-              interactive: true
-            },
-            {
-              id: 'dice-probability',
-              name: 'Predicting Dice Outcomes with Probability',
-              description: 'Interactive probability simulator with dice experiments.',
-              icon: '🎲',
-              difficulty: 'Medium',
-              duration: '25 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop',
-              interactive: true
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'physics-lab',
-      title: 'Physics',
-      description: 'Discover the laws of physics through interactive experiments.',
-      image: 'https://images.unsplash.com/photo-1636953056323-9c09fdd74fa6?w=400&h=200&fit=crop',
-      chapters: [
-        {
-          id: 'interactive-physics',
-          name: 'Interactive Physics Experiments',
-          description: 'Investigate physics principles through simulations.',
-          experiments: [
-            {
-              id: 'friction-test',
-              name: 'Test the Effect of Friction on Surfaces',
-              description: 'Interactive friction simulator with different surfaces.',
-              icon: '🛷',
-              difficulty: 'Medium',
-              duration: '20 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300&h=200&fit=crop',
-              interactive: true
-            },
-            {
-              id: 'sound-waves',
-              name: 'Create and Visualize Sound Waves',
-              description: 'Interactive sound wave generator and visualizer.',
-              icon: '🌊',
-              difficulty: 'Easy',
-              duration: '15 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop',
-              interactive: true
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 'chemistry-lab',
-      title: 'Chemistry',
-      description: 'Explore exciting chemistry through interactive simulations.',
-      image: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?w=400&h=200&fit=crop',
-      chapters: [
-        {
-          id: 'interactive-chemistry',
-          name: 'Interactive Chemistry Experiments',
-          description: 'Conduct virtual chemistry experiments safely.',
-          experiments: [
-            {
-              id: 'flame-direction',
-              name: 'Flame Direction Experiment (Upward Behavior)',
-              description: 'Interactive simulation of flame behavior and physics.',
-              icon: '🔥',
-              difficulty: 'Medium',
-              duration: '18 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1516410529446-2c777777b7aa?w=300&h=200&fit=crop',
-              interactive: true
-            },
-            {
-              id: 'boiling-without-fire',
-              name: 'Boiling Water Without Fire (Using Pressure Differences)',
-              description: 'Interactive pressure experiment simulator.',
-              icon: '💨',
-              difficulty: 'Hard',
-              duration: '25 minutes',
-              thumbnail: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop',
-              interactive: true
-            }
-          ]
-        }
-      ]
-    }
-  ];
-
-  const renderInteractiveExperiment = (experiment: Experiment) => {
-    switch (experiment.id) {
-      case 'brain-signals':
+  const renderInteractiveElement = (experiment: Experiment) => {
+    switch (experiment.interactiveType) {
+      case 'quiz':
         return (
-          <div className="bg-blue-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Neural Signal Transmission</h4>
-            <div className="bg-white p-4 rounded-lg mb-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-4 h-4 bg-blue-500 rounded-full ${neuralSignalActive ? 'animate-pulse' : ''}`}></div>
-                <div className="flex-1 h-2 bg-gray-200 rounded mx-2 relative overflow-hidden">
-                  <div 
-                    className={`h-full bg-blue-500 rounded transition-all duration-1000 ${neuralSignalActive ? 'w-full' : 'w-0'}`}
-                  ></div>
-                </div>
-                <div className={`w-4 h-4 rounded-full ${neuralSignalActive ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
+          <div className="space-y-4">
+            <h4 className="font-semibold flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              Quick Quiz
+            </h4>
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <p className="mb-3">What happens when you add soap to the mixture?</p>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full justify-start">A) It makes bubbles</Button>
+                <Button variant="outline" className="w-full justify-start">B) It breaks down cell walls</Button>
+                <Button variant="outline" className="w-full justify-start">C) It adds color</Button>
               </div>
-              <p className="text-sm text-gray-600">Watch how electrical signals travel through neurons!</p>
-              <p className="text-xs text-blue-600 mt-2">
-                {neuralSignalActive ? 'Signal traveling... ⚡' : 'Ready to send signal'}
-              </p>
-            </div>
-            <button 
-              onClick={startNeuralSignal}
-              disabled={neuralSignalActive}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              {neuralSignalActive ? 'Signal Traveling...' : 'Start Neural Simulation'}
-            </button>
-          </div>
-        );
-      
-      case 'blood-cells':
-        return (
-          <div className="bg-red-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Virtual Microscope</h4>
-            <div className="bg-white p-4 rounded-lg mb-4 border-4 border-gray-800">
-              <div className="w-full h-48 bg-pink-100 rounded-lg flex items-center justify-center relative">
-                {microscopeZoom === '10x' && (
-                  <>
-                    <div className="w-8 h-8 bg-red-500 rounded-full opacity-80 absolute top-4 left-4"></div>
-                    <div className="w-6 h-6 bg-red-400 rounded-full opacity-70 absolute top-8 right-8"></div>
-                    <div className="w-7 h-7 bg-red-600 rounded-full opacity-90 absolute bottom-6 left-1/3"></div>
-                  </>
-                )}
-                {microscopeZoom === '40x' && (
-                  <>
-                    <div className="w-12 h-12 bg-red-500 rounded-full opacity-80 absolute top-2 left-2"></div>
-                    <div className="w-10 h-10 bg-red-400 rounded-full opacity-70 absolute top-6 right-4"></div>
-                    <div className="w-11 h-11 bg-red-600 rounded-full opacity-90 absolute bottom-4 left-1/4"></div>
-                  </>
-                )}
-                {microscopeZoom === '100x' && (
-                  <>
-                    <div className="w-16 h-16 bg-red-500 rounded-full opacity-80 absolute -top-2 -left-2"></div>
-                    <div className="w-14 h-14 bg-red-400 rounded-full opacity-70 absolute top-2 right-0"></div>
-                    <div className="w-15 h-15 bg-red-600 rounded-full opacity-90 absolute bottom-2 left-1/5"></div>
-                  </>
-                )}
-                <p className="text-center text-gray-600">Red Blood Cells ({microscopeZoom} magnification)</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => changeMicroscopeZoom('10x')}
-                className={`px-4 py-2 rounded-lg ${microscopeZoom === '10x' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-red-700 hover:text-white`}
-              >
-                10x
-              </button>
-              <button 
-                onClick={() => changeMicroscopeZoom('40x')}
-                className={`px-4 py-2 rounded-lg ${microscopeZoom === '40x' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-red-700 hover:text-white`}
-              >
-                40x
-              </button>
-              <button 
-                onClick={() => changeMicroscopeZoom('100x')}
-                className={`px-4 py-2 rounded-lg ${microscopeZoom === '100x' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-red-700 hover:text-white`}
-              >
-                100x
-              </button>
             </div>
           </div>
         );
       
-      case 'taj-mahal-geometry':
+      case 'simulation':
         return (
-          <div className="bg-yellow-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Taj Mahal Geometry Builder</h4>
-            <div className="bg-white p-4 rounded-lg mb-4">
-              <svg width="300" height="200" className="mx-auto">
-                <rect x="100" y="120" width="100" height="80" fill="#f0f0f0" stroke="#000" strokeWidth="2"/>
-                <polygon points="150,120 100,80 200,80" fill="#e0e0e0" stroke="#000" strokeWidth="2"/>
-                <circle cx="150" cy="100" r="15" fill="#d0d0d0" stroke="#000" strokeWidth="2"/>
-                <rect x="80" y="150" width="20" height="50" fill="#c0c0c0" stroke="#000" strokeWidth="1"/>
-                <rect x="200" y="150" width="20" height="50" fill="#c0c0c0" stroke="#000" strokeWidth="1"/>
-                <text x="150" y="190" textAnchor="middle" className="text-xs">Taj Mahal Structure</text>
-              </svg>
-              <p className="text-center text-sm text-gray-600 mt-2">
-                Geometric shapes: Rectangle (base), Triangle (roof), Circle (dome)
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
-                Add Dome ⭕
-              </button>
-              <button className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
-                Add Minarets 🏛️
-              </button>
+          <div className="space-y-4">
+            <h4 className="font-semibold flex items-center gap-2">
+              <Play className="w-4 h-4" />
+              Interactive Simulation
+            </h4>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-dashed border-blue-200">
+              <div className="text-center space-y-4">
+                <div className="text-4xl mb-4">🧪</div>
+                <p className="text-sm text-muted-foreground">Click to start simulation</p>
+                <Button onClick={() => handleProgressStep(experiment.id)}>
+                  Run Experiment
+                </Button>
+                <Progress value={experimentProgress[experiment.id] || 0} className="w-full" />
+              </div>
             </div>
           </div>
         );
       
-      case 'dice-probability':
+      case 'input':
         return (
-          <div className="bg-green-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Dice Probability Simulator</h4>
-            <div className="bg-white p-4 rounded-lg mb-4">
-              <div className="flex justify-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-white border-2 border-black rounded-lg flex items-center justify-center text-2xl">
-                  {diceResults.length > 0 ? diceResults[0] : '🎲'}
-                </div>
-                <div className="w-16 h-16 bg-white border-2 border-black rounded-lg flex items-center justify-center text-2xl">
-                  {diceResults.length > 0 ? diceResults[1] : '🎲'}
-                </div>
+          <div className="space-y-4">
+            <h4 className="font-semibold flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Record Your Data
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Measurement 1:</label>
+                <Input placeholder="Enter value" />
               </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                  Predicted: Sum of 7 (16.7% chance)
-                  {diceResults.length > 0 && (
-                    <span className="ml-2 font-bold">
-                      Actual: {diceResults[0] + diceResults[1]} 
-                      {diceResults[0] + diceResults[1] === 7 ? ' ✅' : ' ❌'}
-                    </span>
-                  )}
-                </p>
-                <p className="text-sm text-gray-600">
-                  Rolls: {diceRolls} | Successes: {diceSuccesses} 
-                  {diceRolls > 0 && (
-                    <span className="ml-1">
-                      ({((diceSuccesses / diceRolls) * 100).toFixed(1)}%)
-                    </span>
-                  )}
-                </p>
+              <div>
+                <label className="text-sm font-medium">Measurement 2:</label>
+                <Input placeholder="Enter value" />
               </div>
             </div>
-            <button 
-              onClick={rollDice}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
-            >
-              Roll Dice & Test Prediction 🎲
-            </button>
-          </div>
-        );
-      
-      case 'friction-test':
-        return (
-          <div className="bg-purple-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Friction Surface Tester</h4>
-            <div className="bg-white p-4 rounded-lg mb-4">
-              <div className="mb-4">
-                <div className={`w-full h-12 rounded relative ${
-                  frictionSurface === 'ice' ? 'bg-blue-200' : 
-                  frictionSurface === 'wood' ? 'bg-yellow-700' : 'bg-gray-500'
-                }`}>
-                  <div 
-                    className={`w-8 h-8 bg-blue-500 rounded absolute top-2 transition-all duration-1000 ${
-                      frictionActive 
-                        ? (frictionSurface === 'ice' ? 'left-64' : frictionSurface === 'wood' ? 'left-32' : 'left-16')
-                        : 'left-4'
-                    }`}
-                  ></div>
-                </div>
-                <p className="text-center text-sm text-gray-600 mt-2">
-                  Wooden Block on {frictionSurface.charAt(0).toUpperCase() + frictionSurface.slice(1)} Surface
-                  {frictionActive && (
-                    <span className="ml-2 text-blue-600">
-                      {frictionSurface === 'ice' ? '⚡ Low friction - Fast slide!' : 
-                       frictionSurface === 'wood' ? '🐌 Medium friction' : '🛑 High friction - Slow movement'}
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <button 
-                  onClick={() => setFrictionSurface('ice')}
-                  className={`px-3 py-2 rounded text-xs ${frictionSurface === 'ice' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                >
-                  ❄️ Ice
-                </button>
-                <button 
-                  onClick={() => setFrictionSurface('wood')}
-                  className={`px-3 py-2 rounded text-xs ${frictionSurface === 'wood' ? 'bg-yellow-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                >
-                  🪵 Wood
-                </button>
-                <button 
-                  onClick={() => setFrictionSurface('concrete')}
-                  className={`px-3 py-2 rounded text-xs ${frictionSurface === 'concrete' ? 'bg-gray-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                >
-                  🧱 Concrete
-                </button>
-              </div>
-            </div>
-            <button 
-              onClick={startFrictionTest}
-              disabled={frictionActive}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
-            >
-              {frictionActive ? 'Testing Friction...' : 'Start Friction Test'}
-            </button>
-          </div>
-        );
-      
-      case 'sound-waves':
-        return (
-          <div className="bg-cyan-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Sound Wave Visualizer</h4>
-            <div className="bg-white p-4 rounded-lg mb-4">
-              <svg width="300" height="100" className="mx-auto">
-                <path 
-                  d={`M0,50 ${Array.from({length: 30}, (_, i) => {
-                    const x = i * 10;
-                    const y = 50 + Math.sin((x / 50) * soundFreq / 100) * soundAmp;
-                    return `L${x},${y}`;
-                  }).join(' ')}`}
-                  stroke="#06b6d4" 
-                  strokeWidth={soundPlaying ? "4" : "2"} 
-                  fill="none"
-                  className={soundPlaying ? "animate-pulse" : ""}
-                />
-                <text x="150" y="90" textAnchor="middle" className="text-xs">
-                  Sound Wave Pattern {soundPlaying ? '🔊' : '🔇'}
-                </text>
-              </svg>
-              <div className="mt-4 flex justify-center gap-4">
-                <label className="text-sm">
-                  Frequency: 
-                  <input 
-                    type="range" 
-                    min="100" 
-                    max="1000" 
-                    value={soundFreq}
-                    onChange={(e) => setSoundFreq(Number(e.target.value))}
-                    className="ml-2"
-                  />
-                  <span className="ml-1">{soundFreq}Hz</span>
-                </label>
-                <label className="text-sm">
-                  Amplitude: 
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="10" 
-                    value={soundAmp}
-                    onChange={(e) => setSoundAmp(Number(e.target.value))}
-                    className="ml-2"
-                  />
-                  <span className="ml-1">{soundAmp}</span>
-                </label>
-              </div>
-            </div>
-            <button 
-              onClick={playSound}
-              disabled={soundPlaying}
-              className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 disabled:opacity-50"
-            >
-              {soundPlaying ? '🔊 Playing Sound...' : '🎵 Generate Sound & Visualize'}
-            </button>
-          </div>
-        );
-      
-      case 'flame-direction':
-        return (
-          <div className="bg-orange-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Flame Direction Physics</h4>
-            <div className="bg-white p-4 rounded-lg mb-4">
-              <div className="flex justify-center">
-                <div className="relative">
-                  <div className="w-4 h-16 bg-gray-600 rounded-t"></div>
-                  <div className={`w-8 h-12 bg-orange-400 rounded-full absolute -top-6 -left-2 ${
-                    flameGravity === 'zero' ? 'rounded-full' : 'rounded-full transform -rotate-12'
-                  } animate-pulse`}></div>
-                  <div className={`w-6 h-8 bg-red-500 rounded-full absolute -top-8 -left-1 ${
-                    flameGravity === 'zero' ? 'rounded-full' : 'rounded-full transform -rotate-12'
-                  } animate-pulse`}></div>
-                </div>
-              </div>
-              <p className="text-center text-sm text-gray-600 mt-4">
-                {flameGravity === 'normal' 
-                  ? 'Flames point upward due to buoyancy - hot gases rise! 🔥⬆️'
-                  : 'In zero gravity, flames form spheres! 🔥⭕'
-                }
-              </p>
-              <div className="mt-4 flex justify-center gap-2">
-                <button 
-                  onClick={() => setFlameGravity('normal')}
-                  className={`px-3 py-1 rounded text-xs ${flameGravity === 'normal' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                >
-                  🌍 Normal Gravity
-                </button>
-                <button 
-                  onClick={() => setFlameGravity('zero')}
-                  className={`px-3 py-1 rounded text-xs ${flameGravity === 'zero' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                >
-                  🚀 Zero Gravity
-                </button>
-              </div>
-            </div>
-            <button className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700">
-              Start Flame Experiment 🔥
-            </button>
-          </div>
-        );
-      
-      case 'boiling-without-fire':
-        return (
-          <div className="bg-indigo-50 p-6 rounded-xl">
-            <h4 className="font-bold text-lg mb-4">Pressure Boiling Experiment</h4>
-            <div className="bg-white p-4 rounded-lg mb-4">
-              <div className="flex justify-center">
-                <div className="relative w-24 h-32 border-2 border-gray-600 rounded-lg">
-                  <div className="absolute bottom-0 w-full h-16 bg-blue-300 rounded-b-lg"></div>
-                  {isBoiling && (
-                    <>
-                      <div className="absolute top-2 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '10%'}}></div>
-                      <div className="absolute top-4 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '70%', animationDelay: '0.5s'}}></div>
-                      <div className="absolute top-6 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{left: '40%', animationDelay: '1s'}}></div>
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="text-center text-sm text-gray-600 mt-4">
-                {isBoiling ? 'Water boiling at reduced pressure! 💨' : 'Water at normal pressure'}
-              </p>
-              <div className="mt-2 text-center">
-                <span className={`text-xs px-2 py-1 rounded ${pressure < 0.5 ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                  Pressure: {pressure.toFixed(1)} atm
-                </span>
-                <span className={`text-xs px-2 py-1 rounded ml-2 ${temperature < 80 ? 'bg-red-100' : 'bg-orange-100'}`}>
-                  Temp: {temperature}°C
-                </span>
-              </div>
-            </div>
-            <button 
-              onClick={adjustPressure}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
-            >
-              {pressure > 0.5 ? 'Reduce Pressure & Watch 📉' : 'Reset to Normal Pressure 📈'}
-            </button>
+            <Button onClick={() => handleProgressStep(experiment.id)} className="w-full">
+              Calculate Result
+            </Button>
           </div>
         );
       
       default:
-        return <div>Interactive experiment coming soon!</div>;
+        return (
+          <div className="space-y-4">
+            <h4 className="font-semibold flex items-center gap-2">
+              <Camera className="w-4 h-4" />
+              Document Your Results
+            </h4>
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Upload photos of your experiment</p>
+            </div>
+          </div>
+        );
     }
   };
 
-  return (
-    <div ref={containerRef} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-      {!selectedActivity ? (
-        <div>
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Fun Labs 🚀</h2>
-          <p className="text-gray-600 mb-6">
-            Explore exciting activities and experiments to learn and have fun!
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {activities.map((activity) => (
-              <div
-                key={activity.id}
-                onClick={() => handleActivityClick(activity)}
-                className="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200 hover:border-blue-300 cursor-pointer transition-all hover:shadow-md group"
-              >
-                <img
-                  src={activity.image}
-                  alt={activity.title}
-                  className="w-full h-32 object-cover rounded-md mb-3"
-                />
-                <h3 className="font-semibold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors">
-                  {activity.title}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">{activity.description}</p>
-                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                  Explore Now
-                </span>
-              </div>
-            ))}
-          </div>
+  if (selectedExperiment) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">{selectedExperiment.title}</h2>
+          <Button variant="outline" onClick={() => setSelectedExperiment(null)}>
+            Back to Labs
+          </Button>
         </div>
-      ) : !selectedChapter ? (
-        <div>
-          <div className="flex items-center gap-4 mb-6">
-            <button
-              onClick={handleBackToDashboard}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              <ArrowLeft size={20} />
-              Back to Dashboard
-            </button>
-            <h2 className="text-2xl font-bold text-gray-800">{selectedActivity.title}</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-4">
-            {selectedActivity.chapters.map((chapter) => (
-              <div
-                key={chapter.id}
-                onClick={() => handleChapterClick(chapter)}
-                className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200 hover:border-purple-300 cursor-pointer transition-all hover:shadow-md group"
-              >
-                <h3 className="font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition-colors">
-                  {chapter.name}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">{chapter.description}</p>
-                <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
-                  Explore Now
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : !selectedExperiment ? (
-        <div>
-          <div className="flex items-center gap-4 mb-6">
-            <button
-              onClick={() => setSelectedChapter(null)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              <ArrowLeft size={20} />
-              Back to Chapters
-            </button>
-            <h2 className="text-2xl font-bold text-gray-800">{selectedChapter.name}</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {selectedChapter.experiments.map((experiment) => (
-              <div
-                key={experiment.id}
-                className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200 hover:border-purple-300 transition-all hover:shadow-md group"
-              >
-                <img
-                  src={experiment.thumbnail}
-                  alt={experiment.name}
-                  className="w-full h-32 object-cover rounded-md mb-3"
-                />
-                <div className="text-3xl mb-3">{experiment.icon}</div>
-                <h3 className="font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition-colors">
-                  {experiment.name}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">{experiment.description}</p>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
-                    {experiment.difficulty}
-                  </span>
-                  <span className="text-xs text-gray-500">{experiment.duration}</span>
-                </div>
-                <button
-                  onClick={() => handleStartExperiment(experiment)}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-                >
-                  Start Experiment
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div>
-          <div className="flex items-center gap-4 mb-6">
-            <button
-              onClick={handleBackToChapter}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              <ArrowLeft size={20} />
-              Back to Experiments
-            </button>
-            <h2 className="text-2xl font-bold text-gray-800">{selectedExperiment.name}</h2>
-          </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-xl">
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{selectedExperiment.icon}</div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">{selectedExperiment.name}</h3>
-              <p className="text-gray-600 mb-4">{selectedExperiment.description}</p>
+        <div className="space-y-6">
+          {/* Storyline */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5" />
+                Mission Briefing
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground italic">{selectedExperiment.storyline}</p>
+            </CardContent>
+          </Card>
+
+          {/* Objective */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                Learning Objective
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>{selectedExperiment.objective}</p>
+            </CardContent>
+          </Card>
+
+          {/* Materials */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                Materials Needed
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {selectedExperiment.materials.map((material, index) => (
+                  <Badge key={index} variant="secondary" className="justify-center">
+                    {material}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Instructions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Play className="w-5 h-5" />
+                Step-by-Step Instructions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ol className="space-y-3">
+                {selectedExperiment.instructions.map((instruction, index) => (
+                  <li key={index} className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                      {index + 1}
+                    </span>
+                    <span>{instruction}</span>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+
+          {/* Interactive Element */}
+          <Card>
+            <CardContent className="pt-6">
+              {renderInteractiveElement(selectedExperiment)}
+            </CardContent>
+          </Card>
+
+          {/* Explanation */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="w-5 h-5" />
+                Scientific Explanation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{selectedExperiment.explanation}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold mb-4">🧪 Fun Labs - Interactive Experiments</h2>
+        <p className="text-muted-foreground text-lg">
+          Embark on scientific adventures with hands-on experiments across all subjects!
+        </p>
+      </div>
+
+      <Tabs defaultValue="biology" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
+          {Object.entries(subjectIcons).map(([subject, icon]) => (
+            <TabsTrigger key={subject} value={subject} className="flex items-center gap-2">
+              {icon}
+              <span className="capitalize hidden sm:inline">{subject}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {Object.entries(experiments).map(([subject, subjectExperiments]) => (
+          <TabsContent key={subject} value={subject}>
+            <div className={`bg-gradient-to-r ${subjectColors[subject as keyof typeof subjectColors]} text-white rounded-xl p-6 mb-6`}>
+              <div className="flex items-center gap-3 mb-3">
+                {subjectIcons[subject as keyof typeof subjectIcons]}
+                <h3 className="text-2xl font-bold capitalize">{subject} Lab</h3>
+              </div>
+              <p className="text-white/90">
+                Discover the wonders of {subject} through exciting hands-on experiments!
+              </p>
             </div>
 
-            {renderInteractiveExperiment(selectedExperiment)}
-          </div>
-        </div>
-      )}
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+              {subjectExperiments.map((experiment, index) => (
+                <Card key={experiment.id} className="hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                        {experiment.title}
+                      </CardTitle>
+                      <Badge variant="outline">Experiment {index + 1}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {experiment.storyline}
+                    </p>
+                    <Separator />
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">OBJECTIVE:</p>
+                      <p className="text-sm">{experiment.objective}</p>
+                    </div>
+                    <Button 
+                      onClick={() => handleStartExperiment(experiment)}
+                      className="w-full"
+                    >
+                      Start Mission
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 };
