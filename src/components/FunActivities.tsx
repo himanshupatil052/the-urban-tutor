@@ -29,7 +29,7 @@ interface Experiment {
   instructions: string[];
   howToDo: string;
   explanation: string;
-  interactiveType: 'quiz' | 'simulation' | 'input' | 'video';
+  interactiveType: 'quiz' | 'simulation' | 'input' | 'video' | 'neutralization';
 }
 
 const FunActivities: React.FC = () => {
@@ -37,6 +37,7 @@ const FunActivities: React.FC = () => {
   const [experimentProgress, setExperimentProgress] = useState<{ [key: string]: number }>({});
   const [quizAnswers, setQuizAnswers] = useState<{ [key: string]: string }>({});
   const [simulationStates, setSimulationStates] = useState<{ [key: string]: any }>({});
+  const [neutralizationStates, setNeutralizationStates] = useState<{ [key: string]: { naohAdded: boolean; hclAdded: boolean; beakerColor: string; reactionComplete: boolean } }>({});
 
   const experiments: { [key: string]: Experiment[] } = {
     biology: [
@@ -96,6 +97,24 @@ const FunActivities: React.FC = () => {
       }
     ],
     chemistry: [
+      {
+        id: 'acid-base-neutralization',
+        title: 'Acid + Base = Neutral!',
+        storyline: "You're a lab chemist testing neutralization reactions. Can you safely neutralize the acid with the base?",
+        objective: 'Learn acid-base neutralization and chemical reactions',
+        materials: ['NaOH (Sodium Hydroxide)', 'HCl (Hydrochloric Acid)', 'Beaker', 'Safety equipment'],
+        instructions: [
+          'Drag the NaOH (blue) into the beaker',
+          'Observe the blue color filling the beaker',
+          'Drag the HCl (pink) into the same beaker',
+          'Watch the neutralization reaction occur',
+          'Observe the colorless result',
+          'Read the chemical equation explanation'
+        ],
+        howToDo: 'Interactive drag-and-drop with color-changing beaker animation',
+        explanation: 'When a base (NaOH) reacts with an acid (HCl), they neutralize each other to form salt (NaCl) and water (H₂O), resulting in a colorless solution.',
+        interactiveType: 'neutralization'
+      },
       {
         id: 'density-tower',
         title: 'Liquid Density Tower',
@@ -282,11 +301,34 @@ const FunActivities: React.FC = () => {
   const handleStartExperiment = (experiment: Experiment) => {
     setSelectedExperiment(experiment);
     setExperimentProgress({ ...experimentProgress, [experiment.id]: 0 });
+    if (experiment.interactiveType === 'neutralization') {
+      setNeutralizationStates({
+        ...neutralizationStates,
+        [experiment.id]: { naohAdded: false, hclAdded: false, beakerColor: 'transparent', reactionComplete: false }
+      });
+    }
   };
 
   const handleProgressStep = (experimentId: string) => {
     const currentProgress = experimentProgress[experimentId] || 0;
     setExperimentProgress({ ...experimentProgress, [experimentId]: Math.min(100, currentProgress + 20) });
+  };
+
+  const handleDragDrop = (experimentId: string, substance: 'naoh' | 'hcl') => {
+    const currentState = neutralizationStates[experimentId] || { naohAdded: false, hclAdded: false, beakerColor: 'transparent', reactionComplete: false };
+    
+    if (substance === 'naoh' && !currentState.naohAdded) {
+      const newState = { ...currentState, naohAdded: true, beakerColor: 'blue' };
+      setNeutralizationStates({ ...neutralizationStates, [experimentId]: newState });
+    } else if (substance === 'hcl' && !currentState.hclAdded) {
+      const newState = { 
+        ...currentState, 
+        hclAdded: true, 
+        beakerColor: currentState.naohAdded ? 'transparent' : 'pink',
+        reactionComplete: currentState.naohAdded 
+      };
+      setNeutralizationStates({ ...neutralizationStates, [experimentId]: newState });
+    }
   };
 
   const renderInteractiveElement = (experiment: Experiment) => {
@@ -349,6 +391,82 @@ const FunActivities: React.FC = () => {
             <Button onClick={() => handleProgressStep(experiment.id)} className="w-full">
               Calculate Result
             </Button>
+          </div>
+        );
+
+      case 'neutralization':
+        const neutralState = neutralizationStates[experiment.id] || { naohAdded: false, hclAdded: false, beakerColor: 'transparent', reactionComplete: false };
+        return (
+          <div className="space-y-6">
+            <h4 className="font-semibold flex items-center gap-2">
+              <FlaskConical className="w-4 h-4" />
+              Acid-Base Neutralization Lab
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Beaker */}
+              <div className="flex flex-col items-center space-y-4">
+                <h5 className="text-sm font-medium">Reaction Beaker</h5>
+                <div className="relative">
+                  <div className="w-32 h-40 border-4 border-gray-400 rounded-b-full bg-gray-50 flex items-end justify-center overflow-hidden">
+                    <div 
+                      className={`w-full transition-all duration-700 ease-in-out ${
+                        neutralState.beakerColor === 'blue' ? 'bg-blue-400 h-20' :
+                        neutralState.beakerColor === 'pink' ? 'bg-pink-400 h-20' :
+                        neutralState.beakerColor === 'transparent' && neutralState.reactionComplete ? 'bg-gray-100 h-20' : 'h-0'
+                      }`}
+                    />
+                  </div>
+                  <div className="text-xs text-center mt-2 text-muted-foreground">
+                    {neutralState.beakerColor === 'transparent' && neutralState.reactionComplete ? 'Colorless Solution' : 
+                     neutralState.beakerColor === 'blue' ? 'Blue Base Solution' :
+                     neutralState.beakerColor === 'pink' ? 'Pink Acid Solution' : 'Empty Beaker'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Reagents */}
+              <div className="flex flex-col space-y-4">
+                <h5 className="text-sm font-medium">Drag Reagents to Beaker</h5>
+                
+                {!neutralState.naohAdded && (
+                  <div 
+                    className="bg-blue-500 text-white p-4 rounded-lg cursor-move hover:bg-blue-600 transition-colors text-center font-semibold"
+                    draggable
+                    onDragEnd={() => handleDragDrop(experiment.id, 'naoh')}
+                    onClick={() => handleDragDrop(experiment.id, 'naoh')}
+                  >
+                    NaOH (Base)
+                    <div className="text-xs mt-1 opacity-80">Sodium Hydroxide</div>
+                  </div>
+                )}
+
+                {!neutralState.hclAdded && (
+                  <div 
+                    className="bg-pink-500 text-white p-4 rounded-lg cursor-move hover:bg-pink-600 transition-colors text-center font-semibold"
+                    draggable
+                    onDragEnd={() => handleDragDrop(experiment.id, 'hcl')}
+                    onClick={() => handleDragDrop(experiment.id, 'hcl')}
+                  >
+                    HCl (Acid)
+                    <div className="text-xs mt-1 opacity-80">Hydrochloric Acid</div>
+                  </div>
+                )}
+
+                {neutralState.naohAdded && neutralState.hclAdded && (
+                  <div className="text-center p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                    <div className="text-green-700 font-semibold mb-2">✅ Neutralization Complete!</div>
+                    <div className="text-sm text-green-600">
+                      NaOH (base) + HCl (acid) = NaCl (salt) + H₂O (water)
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="text-xs text-muted-foreground text-center">
+              Click or drag the reagents into the beaker to observe the neutralization reaction
+            </div>
           </div>
         );
       
