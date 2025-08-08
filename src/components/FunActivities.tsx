@@ -17,7 +17,9 @@ import {
   Lightbulb,
   BookOpen,
   Camera,
-  Upload
+  Upload,
+  RotateCcw,
+  Shield
 } from 'lucide-react';
 
 interface Experiment {
@@ -29,7 +31,29 @@ interface Experiment {
   instructions: string[];
   howToDo: string;
   explanation: string;
-  interactiveType: 'quiz' | 'simulation' | 'input' | 'video' | 'neutralization';
+  interactiveType: 'quiz' | 'simulation' | 'input' | 'video' | 'neutralization' | 'dna-extraction' | 'mix-lab';
+}
+
+interface MixLabState {
+  reagentsAdded: string[];
+  beakerColor: string;
+  animation: string;
+  bubbles: boolean;
+  resultText: string;
+  quizQuestion: string;
+  quizOptions: string[];
+  quizAnswer: string;
+  showQuiz: boolean;
+}
+
+interface DnaExtractionState {
+  currentStep: number;
+  materialsUsed: string[];
+  beakerContent: string;
+  showStrands: boolean;
+  extractionProgress: number;
+  resultText: string;
+  showQuiz: boolean;
 }
 
 const FunActivities: React.FC = () => {
@@ -38,26 +62,28 @@ const FunActivities: React.FC = () => {
   const [quizAnswers, setQuizAnswers] = useState<{ [key: string]: string }>({});
   const [simulationStates, setSimulationStates] = useState<{ [key: string]: any }>({});
   const [neutralizationStates, setNeutralizationStates] = useState<{ [key: string]: { naohAdded: boolean; hclAdded: boolean; beakerColor: string; reactionComplete: boolean } }>({});
+  const [mixLabStates, setMixLabStates] = useState<{ [key: string]: MixLabState }>({});
+  const [dnaExtractionStates, setDnaExtractionStates] = useState<{ [key: string]: DnaExtractionState }>({});
 
   const experiments: { [key: string]: Experiment[] } = {
     biology: [
       {
         id: 'dna-extraction',
         title: 'DNA Extraction from a Banana',
-        storyline: "You're a young scientist working for \"FunLabs Bio Research.\" A strange plant mutation was discovered. Your job is to extract its DNA and find out why it's changing.",
-        objective: 'Understand DNA in cells; learn basic molecular biology skills',
-        materials: ['Banana', 'Dish soap', 'Salt', 'Warm water', 'Rubbing alcohol', 'Ziplock bag', 'Coffee filter', 'Glass'],
+        storyline: "You're a junior scientist at FunLabs Bio Research. A mutated plant was found — extract DNA from a banana sample to help investigate the change.",
+        objective: 'Show that cells contain DNA and that DNA can be extracted and seen',
+        materials: ['Banana', 'Ziplock bag', 'Dish soap', 'Salt', 'Warm water', 'Coffee filter', 'Chilled rubbing alcohol', 'Glass/cup', 'Wooden stick'],
         instructions: [
-          'Mash the banana in a ziplock bag',
-          'Add soap, salt, and warm water to the bag',
-          'Mix gently for 2 minutes',
-          'Filter the mixture through coffee filter',
-          'Slowly add cold rubbing alcohol',
-          'Observe the DNA strands forming at the surface'
+          'Add banana to ziplock and mash to break cells',
+          'Add salt, warm water, and dish soap to release DNA',
+          'Mash/shake the mixture thoroughly',
+          'Filter the slurry to collect clear liquid',
+          'Slowly pour chilled alcohol to precipitate DNA',
+          'Use wooden stick to extract visible DNA strands'
         ],
-        howToDo: 'Use in-app video demo + quiz + allow photo uploads',
-        explanation: 'Soap breaks cell walls, salt clumps DNA together, and alcohol makes DNA visible as it separates from water.',
-        interactiveType: 'quiz'
+        howToDo: 'Interactive drag-and-drop simulation with step-by-step animations',
+        explanation: 'Soap breaks cell membranes, salt helps DNA come together, and cold alcohol makes DNA visible by precipitating it out of solution.',
+        interactiveType: 'dna-extraction'
       },
       {
         id: 'ph-indicator',
@@ -98,22 +124,22 @@ const FunActivities: React.FC = () => {
     ],
     chemistry: [
       {
-        id: 'acid-base-neutralization',
-        title: 'Acid + Base = Neutral!',
-        storyline: "You're a lab chemist testing neutralization reactions. Can you safely neutralize the acid with the base?",
-        objective: 'Learn acid-base neutralization and chemical reactions',
-        materials: ['NaOH (Sodium Hydroxide)', 'HCl (Hydrochloric Acid)', 'Beaker', 'Safety equipment'],
+        id: 'mix-lab',
+        title: 'Mix Lab',
+        storyline: "Welcome to the Chemistry Mix Lab! You're a young chemist with access to common household reagents. Discover what happens when you mix them!",
+        objective: 'Learn chemical reactions, pH changes, and gas production through safe experimentation',
+        materials: ['Vinegar (acetic acid)', 'Baking Soda (sodium bicarbonate)', 'Red Cabbage Indicator', 'Sugar', 'Yeast', 'Milk'],
         instructions: [
-          'Drag the NaOH (blue) into the beaker',
-          'Observe the blue color filling the beaker',
-          'Drag the HCl (pink) into the same beaker',
-          'Watch the neutralization reaction occur',
-          'Observe the colorless result',
-          'Read the chemical equation explanation'
+          'Drag reagents from the right into the beaker',
+          'Observe color changes and reactions',
+          'Mix up to 3 reagents for clear results',
+          'Complete the quiz after each reaction',
+          'Use the Reset button to try new combinations',
+          'Follow safety guidelines for real experiments'
         ],
-        howToDo: 'Interactive drag-and-drop with color-changing beaker animation',
-        explanation: 'When a base (NaOH) reacts with an acid (HCl), they neutralize each other to form salt (NaCl) and water (H₂O), resulting in a colorless solution.',
-        interactiveType: 'neutralization'
+        howToDo: 'Interactive drag-and-drop with animated reactions and educational quizzes',
+        explanation: 'Different chemical combinations produce various reactions: acids and bases neutralize, yeast ferments sugars, and pH indicators change colors.',
+        interactiveType: 'mix-lab'
       },
       {
         id: 'density-tower',
@@ -307,6 +333,36 @@ const FunActivities: React.FC = () => {
         [experiment.id]: { naohAdded: false, hclAdded: false, beakerColor: 'transparent', reactionComplete: false }
       });
     }
+    if (experiment.interactiveType === 'mix-lab') {
+      setMixLabStates({
+        ...mixLabStates,
+        [experiment.id]: {
+          reagentsAdded: [],
+          beakerColor: 'transparent',
+          animation: '',
+          bubbles: false,
+          resultText: '',
+          quizQuestion: '',
+          quizOptions: [],
+          quizAnswer: '',
+          showQuiz: false
+        }
+      });
+    }
+    if (experiment.interactiveType === 'dna-extraction') {
+      setDnaExtractionStates({
+        ...dnaExtractionStates,
+        [experiment.id]: {
+          currentStep: 0,
+          materialsUsed: [],
+          beakerContent: 'empty',
+          showStrands: false,
+          extractionProgress: 0,
+          resultText: '',
+          showQuiz: false
+        }
+      });
+    }
   };
 
   const handleProgressStep = (experimentId: string) => {
@@ -329,6 +385,207 @@ const FunActivities: React.FC = () => {
       };
       setNeutralizationStates({ ...neutralizationStates, [experimentId]: newState });
     }
+  };
+
+  const handleMixLabDrop = (experimentId: string, reagent: string) => {
+    const currentState = mixLabStates[experimentId];
+    if (!currentState || currentState.reagentsAdded.includes(reagent)) return;
+    
+    if (currentState.reagentsAdded.length >= 3) {
+      alert('Try mixing 2–3 ingredients for clear results.');
+      return;
+    }
+
+    const newReagents = [...currentState.reagentsAdded, reagent];
+    let newState = { ...currentState, reagentsAdded: newReagents };
+
+    // Apply reaction rules
+    const reactionKey = newReagents.sort().join('+');
+    
+    if (reactionKey === 'Baking Soda+Vinegar') {
+      newState = {
+        ...newState,
+        beakerColor: 'rgba(255, 192, 203, 0.6)',
+        animation: 'bubbles-vigorous',
+        bubbles: true,
+        resultText: 'FIZZ: CO2 released. NaHCO3 + CH3COOH → NaCH3COO + H2O + CO2. You observed gas bubbles!',
+        quizQuestion: 'Which gas was released?',
+        quizOptions: ['Oxygen', 'Carbon dioxide', 'Hydrogen'],
+        quizAnswer: 'Carbon dioxide',
+        showQuiz: true
+      };
+    } else if (reactionKey === 'Red Cabbage Indicator+Vinegar') {
+      newState = {
+        ...newState,
+        beakerColor: 'rgba(255, 0, 0, 0.7)',
+        resultText: 'Indicator turned red: acidic solution (low pH). Anthocyanin in cabbage shifts to red in acid.',
+        quizQuestion: 'Acidic indicator color?',
+        quizOptions: ['Blue', 'Red', 'Green'],
+        quizAnswer: 'Red',
+        showQuiz: true
+      };
+    } else if (reactionKey === 'Baking Soda+Red Cabbage Indicator') {
+      newState = {
+        ...newState,
+        beakerColor: 'rgba(0, 128, 255, 0.7)',
+        resultText: 'Indicator turned blue/green: basic solution (high pH).',
+        quizQuestion: 'Base makes cabbage indicator look?',
+        quizOptions: ['Red', 'Blue/green', 'Yellow'],
+        quizAnswer: 'Blue/green',
+        showQuiz: true
+      };
+    } else if (reactionKey === 'Sugar+Yeast') {
+      newState = {
+        ...newState,
+        beakerColor: 'rgba(139, 69, 19, 0.4)',
+        animation: 'bubbles-slow',
+        bubbles: true,
+        resultText: 'Yeast ferments sugar producing CO2 — fermentation.',
+        showQuiz: false
+      };
+    } else if (reactionKey === 'Milk+Vinegar') {
+      newState = {
+        ...newState,
+        beakerColor: 'rgba(255, 255, 224, 0.8)',
+        animation: 'curdle',
+        resultText: 'Milk curdles: acid denatures milk proteins (casein).',
+        showQuiz: false
+      };
+    } else if (reactionKey === 'Baking Soda+Red Cabbage Indicator+Vinegar') {
+      newState = {
+        ...newState,
+        beakerColor: 'rgba(128, 0, 128, 0.5)',
+        animation: 'bubbles-vigorous',
+        bubbles: true,
+        resultText: 'Neutralization: acid + base react, pH moves toward neutral; CO2 produced.',
+        showQuiz: false
+      };
+    } else {
+      newState = {
+        ...newState,
+        resultText: 'No visible reaction — try different ingredients. Try adding Vinegar or Baking Soda or Red Cabbage Indicator.',
+        showQuiz: false
+      };
+    }
+
+    setMixLabStates({ ...mixLabStates, [experimentId]: newState });
+  };
+
+  const handleDnaExtractionStep = (experimentId: string, action: string, material?: string) => {
+    const currentState = dnaExtractionStates[experimentId];
+    if (!currentState) return;
+
+    let newState = { ...currentState };
+
+    switch (action) {
+      case 'add-banana':
+        if (material === 'Banana') {
+          newState = {
+            ...newState,
+            materialsUsed: [...newState.materialsUsed, 'Banana'],
+            beakerContent: 'mashed-banana',
+            currentStep: 1,
+            extractionProgress: 16.7
+          };
+        }
+        break;
+      
+      case 'add-ingredients':
+        if (material && ['Salt', 'Warm water', 'Dish soap'].includes(material) && !newState.materialsUsed.includes(material)) {
+          const newMaterials = [...newState.materialsUsed, material];
+          const hasAllIngredients = ['Salt', 'Warm water', 'Dish soap'].every(ing => newMaterials.includes(ing));
+          newState = {
+            ...newState,
+            materialsUsed: newMaterials,
+            beakerContent: hasAllIngredients ? 'mixture' : newState.beakerContent,
+            currentStep: hasAllIngredients ? 2 : newState.currentStep,
+            extractionProgress: hasAllIngredients ? 33.4 : newState.extractionProgress
+          };
+        }
+        break;
+      
+      case 'mash':
+        if (newState.currentStep >= 2) {
+          newState = {
+            ...newState,
+            currentStep: 3,
+            extractionProgress: 50
+          };
+        }
+        break;
+      
+      case 'filter':
+        if (material === 'Coffee filter' && newState.currentStep >= 3) {
+          newState = {
+            ...newState,
+            materialsUsed: [...newState.materialsUsed, 'Coffee filter'],
+            beakerContent: 'filtered-liquid',
+            currentStep: 4,
+            extractionProgress: 66.7
+          };
+        }
+        break;
+      
+      case 'add-alcohol':
+        if (material === 'Chilled rubbing alcohol' && newState.currentStep >= 4) {
+          newState = {
+            ...newState,
+            materialsUsed: [...newState.materialsUsed, 'Chilled rubbing alcohol'],
+            beakerContent: 'dna-visible',
+            showStrands: true,
+            currentStep: 5,
+            extractionProgress: 83.4
+          };
+        }
+        break;
+      
+      case 'extract':
+        if (material === 'Wooden stick' && newState.currentStep >= 5) {
+          newState = {
+            ...newState,
+            materialsUsed: [...newState.materialsUsed, 'Wooden stick'],
+            currentStep: 6,
+            extractionProgress: 100,
+            resultText: '✔ You extracted DNA! Soap broke the cell membranes, salt helped DNA come together, and cold alcohol made the DNA come out of solution as visible strands.',
+            showQuiz: true
+          };
+        }
+        break;
+    }
+
+    setDnaExtractionStates({ ...dnaExtractionStates, [experimentId]: newState });
+  };
+
+  const resetMixLab = (experimentId: string) => {
+    setMixLabStates({
+      ...mixLabStates,
+      [experimentId]: {
+        reagentsAdded: [],
+        beakerColor: 'transparent',
+        animation: '',
+        bubbles: false,
+        resultText: '',
+        quizQuestion: '',
+        quizOptions: [],
+        quizAnswer: '',
+        showQuiz: false
+      }
+    });
+  };
+
+  const resetDnaExtraction = (experimentId: string) => {
+    setDnaExtractionStates({
+      ...dnaExtractionStates,
+      [experimentId]: {
+        currentStep: 0,
+        materialsUsed: [],
+        beakerContent: 'empty',
+        showStrands: false,
+        extractionProgress: 0,
+        resultText: '',
+        showQuiz: false
+      }
+    });
   };
 
   const renderInteractiveElement = (experiment: Experiment) => {
@@ -467,6 +724,252 @@ const FunActivities: React.FC = () => {
             <div className="text-xs text-muted-foreground text-center">
               Click or drag the reagents into the beaker to observe the neutralization reaction
             </div>
+          </div>
+        );
+
+      case 'mix-lab':
+        const mixLabState = mixLabStates[experiment.id] || { reagentsAdded: [], beakerColor: 'transparent', animation: '', bubbles: false, resultText: '', quizQuestion: '', quizOptions: [], quizAnswer: '', showQuiz: false };
+        const availableReagents = ['Vinegar', 'Baking Soda', 'Red Cabbage Indicator', 'Sugar', 'Yeast', 'Milk'];
+        const reagentColors = {
+          'Vinegar': 'bg-pink-400',
+          'Baking Soda': 'bg-blue-300',
+          'Red Cabbage Indicator': 'bg-purple-500',
+          'Sugar': 'bg-yellow-300',
+          'Yeast': 'bg-amber-600',
+          'Milk': 'bg-stone-100 text-gray-800'
+        };
+
+        return (
+          <div className="space-y-4">
+            <h4 className="font-semibold flex items-center gap-2">
+              <FlaskConical className="w-4 h-4" />
+              Chemistry Mix Lab
+            </h4>
+            
+            {/* Safety Notice */}
+            <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <Shield className="w-4 h-4 text-yellow-600" />
+              <p className="text-xs text-yellow-800">Simulation mode: For physical experiments, use adult supervision, gloves, and goggles. Do not ingest chemicals.</p>
+            </div>
+
+            <div className="flex gap-6">
+              {/* Beaker Area */}
+              <div className="flex-1 space-y-4">
+                <div className="relative w-40 h-48 mx-auto">
+                  <div className="absolute inset-0 border-4 border-gray-400 rounded-b-full bg-white/50"></div>
+                  <div 
+                    className={`absolute bottom-1 left-1 right-1 rounded-b-full transition-all duration-1000 ${
+                      mixLabState.animation === 'bubbles-vigorous' ? 'animate-pulse' : 
+                      mixLabState.animation === 'bubbles-slow' ? 'animate-pulse' : ''
+                    }`}
+                    style={{ 
+                      backgroundColor: mixLabState.beakerColor,
+                      height: mixLabState.beakerColor === 'transparent' ? '0%' : '60%'
+                    }}
+                  >
+                    {mixLabState.bubbles && (
+                      <div className="absolute inset-0 flex items-end justify-center pb-2">
+                        <div className="text-2xl animate-bounce">🫧</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Reagents Added */}
+                {mixLabState.reagentsAdded.length > 0 && (
+                  <div className="text-xs text-center">
+                    <p className="font-medium">Added: {mixLabState.reagentsAdded.join(' + ')}</p>
+                  </div>
+                )}
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => resetMixLab(experiment.id)}
+                  className="w-full"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset
+                </Button>
+              </div>
+              
+              {/* Reagent Tiles */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Drag reagents:</p>
+                {availableReagents.filter(reagent => !mixLabState.reagentsAdded.includes(reagent)).map(reagent => (
+                  <div 
+                    key={reagent}
+                    className={`w-36 h-10 ${reagentColors[reagent]} rounded-lg flex items-center justify-center text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity text-white`}
+                    onClick={() => handleMixLabDrop(experiment.id, reagent)}
+                  >
+                    {reagent}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Results */}
+            {mixLabState.resultText && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm font-medium text-blue-900">{mixLabState.resultText}</p>
+                
+                {mixLabState.showQuiz && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm font-medium">{mixLabState.quizQuestion}</p>
+                    <div className="space-y-1">
+                      {mixLabState.quizOptions.map((option, index) => (
+                        <Button 
+                          key={index}
+                          variant="outline" 
+                          size="sm"
+                          className={`w-full justify-start text-xs ${
+                            option === mixLabState.quizAnswer ? 'bg-green-100 border-green-300' : ''
+                          }`}
+                        >
+                          {String.fromCharCode(97 + index)}) {option}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'dna-extraction':
+        const dnaState = dnaExtractionStates[experiment.id] || { currentStep: 0, materialsUsed: [], beakerContent: 'empty', showStrands: false, extractionProgress: 0, resultText: '', showQuiz: false };
+        const dnaMaterials = ['Banana', 'Salt', 'Warm water', 'Dish soap', 'Coffee filter', 'Chilled rubbing alcohol', 'Wooden stick'];
+
+        return (
+          <div className="space-y-4">
+            <h4 className="font-semibold flex items-center gap-2">
+              <Microscope className="w-4 h-4" />
+              DNA Extraction Lab
+            </h4>
+            
+            {/* Safety Notice */}
+            <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <Shield className="w-4 h-4 text-yellow-600" />
+              <p className="text-xs text-yellow-800">Simulation mode: For real experiments, use adult supervision, gloves, and goggles. Do not ingest any materials.</p>
+            </div>
+
+            {/* Progress */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Progress</span>
+                <span>{Math.round(dnaState.extractionProgress)}%</span>
+              </div>
+              <Progress value={dnaState.extractionProgress} className="w-full" />
+            </div>
+
+            <div className="flex gap-6">
+              {/* Workspace */}
+              <div className="flex-1 space-y-4">
+                <div className="relative w-40 h-48 mx-auto">
+                  {/* Ziplock/Beaker representation */}
+                  <div className="absolute inset-0 border-4 border-gray-400 rounded-lg bg-white/50">
+                    {dnaState.beakerContent === 'mashed-banana' && (
+                      <div className="absolute bottom-2 left-2 right-2 h-16 bg-yellow-200 rounded"></div>
+                    )}
+                    {dnaState.beakerContent === 'mixture' && (
+                      <div className="absolute bottom-2 left-2 right-2 h-20 bg-yellow-300 rounded opacity-80"></div>
+                    )}
+                    {dnaState.beakerContent === 'filtered-liquid' && (
+                      <div className="absolute bottom-2 left-2 right-2 h-12 bg-yellow-100 rounded"></div>
+                    )}
+                    {dnaState.beakerContent === 'dna-visible' && (
+                      <div className="absolute bottom-2 left-2 right-2 h-16 bg-gradient-to-t from-yellow-100 to-transparent rounded">
+                        {dnaState.showStrands && (
+                          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-white text-lg animate-pulse">
+                            🧬
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Step Instructions */}
+                <div className="text-center space-y-2">
+                  {dnaState.currentStep === 0 && <p className="text-sm">Step 1: Add banana to start</p>}
+                  {dnaState.currentStep === 1 && <p className="text-sm">Step 2: Add salt, water, and soap</p>}
+                  {dnaState.currentStep === 2 && <p className="text-sm">Step 3: Mash the mixture</p>}
+                  {dnaState.currentStep === 3 && <p className="text-sm">Step 4: Filter the mixture</p>}
+                  {dnaState.currentStep === 4 && <p className="text-sm">Step 5: Add chilled alcohol</p>}
+                  {dnaState.currentStep === 5 && <p className="text-sm">Step 6: Extract DNA strands</p>}
+                  
+                  {dnaState.currentStep === 2 && (
+                    <Button size="sm" onClick={() => handleDnaExtractionStep(experiment.id, 'mash')}>
+                      Mash/Shake
+                    </Button>
+                  )}
+                </div>
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => resetDnaExtraction(experiment.id)}
+                  className="w-full"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset
+                </Button>
+              </div>
+              
+              {/* Material Tiles */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Materials:</p>
+                {dnaMaterials.filter(material => !dnaState.materialsUsed.includes(material)).map(material => (
+                  <div 
+                    key={material}
+                    className="w-36 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center text-xs font-medium cursor-pointer transition-colors"
+                    onClick={() => {
+                      if (material === 'Banana') {
+                        handleDnaExtractionStep(experiment.id, 'add-banana', material);
+                      } else if (['Salt', 'Warm water', 'Dish soap'].includes(material)) {
+                        handleDnaExtractionStep(experiment.id, 'add-ingredients', material);
+                      } else if (material === 'Coffee filter') {
+                        handleDnaExtractionStep(experiment.id, 'filter', material);
+                      } else if (material === 'Chilled rubbing alcohol') {
+                        handleDnaExtractionStep(experiment.id, 'add-alcohol', material);
+                      } else if (material === 'Wooden stick') {
+                        handleDnaExtractionStep(experiment.id, 'extract', material);
+                      }
+                    }}
+                  >
+                    {material}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Results */}
+            {dnaState.resultText && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-green-900">{dnaState.resultText}</p>
+                
+                {dnaState.showQuiz && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm font-medium">Why do we add alcohol at the end?</p>
+                    <div className="space-y-1">
+                      {['To make it smell good', 'To make DNA visible by making it come out of solution', 'To change color'].map((option, index) => (
+                        <Button 
+                          key={index}
+                          variant="outline" 
+                          size="sm"
+                          className={`w-full justify-start text-xs ${
+                            option.includes('DNA visible') ? 'bg-green-100 border-green-300' : ''
+                          }`}
+                        >
+                          {String.fromCharCode(97 + index)}) {option}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         );
       
