@@ -22,7 +22,7 @@ const UserProfile: React.FC = () => {
   const [selectedAvatar, setSelectedAvatar] = useState(funnyAvatars[0]);
   const [showAvatars, setShowAvatars] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [userName, setUserName] = useState('Alex');
+  const [userName, setUserName] = useState('Himanshu');
 
   const getGreeting = () => {
     const hour = new Date().getHours();

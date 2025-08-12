@@ -110,7 +110,7 @@ const ParentsSection: React.FC<ParentsSectionProps> = ({ isOpen, onClose }) => {
           <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
             <h3 className="text-lg font-bold text-gray-800 mb-3">💡 Suggestions for Parents</h3>
             <ul className="space-y-2 text-sm text-gray-700">
-              <li>• Encourage Alex to spend more time on Biology - currently at 40% progress</li>
+              <li>• Encourage Himanshu to spend more time on Biology - currently at 40% progress</li>
               <li>• Great progress in Mathematics! Consider introducing advanced topics</li>
               <li>• Schedule regular breaks during study sessions for better retention</li>
               <li>• Quiz performance is good - maybe try more challenging practice tests</li>

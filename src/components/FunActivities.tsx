@@ -46,9 +46,13 @@ const FunActivities: React.FC = () => {
   const [isLaunching, setIsLaunching] = useState(false);
   const [trajectory, setTrajectory] = useState<{x: number, y: number}[]>([]);
   
-  // Taj Mahal Builder State
-  const [selectedShape, setSelectedShape] = useState('');
-  const [placedShapes, setPlacedShapes] = useState<{id: string, type: string, x: number, y: number, rotation: number}[]>([]);
+  // Roller Coaster Builder State
+  const [selectedTrackPiece, setSelectedTrackPiece] = useState('');
+  const [placedTracks, setPlacedTracks] = useState<{id: string, type: string, x: number, y: number, rotation: number}[]>([]);
+  const [isTestingRide, setIsTestingRide] = useState(false);
+  const [totalTrackLength, setTotalTrackLength] = useState(0);
+  const [estimatedTime, setEstimatedTime] = useState(0);
+  const [loopCount, setLoopCount] = useState(0);
 
   const experiments: { [key: string]: Experiment } = {
     'dna-extraction': {
@@ -98,21 +102,21 @@ const FunActivities: React.FC = () => {
       ],
       explanation: 'Projectiles follow parabolic paths due to gravity. 45° typically gives maximum range, but optimal angle depends on target height and distance.'
     },
-    'taj-mahal-builder': {
-      id: 'taj-mahal-builder',
-      title: 'Taj Mahal Builder',
-      storyline: "You're an architect in 17th century India, commissioned to build a magnificent monument. Use geometric shapes to create your masterpiece!",
-      objective: 'Learn geometric shapes, symmetry, proportions, and architectural principles',
-      materials: ['Rectangle', 'Square', 'Semi-circle', 'Dome', 'Pillar'],
+    'roller-coaster-builder': {
+      id: 'roller-coaster-builder',
+      title: 'Build Your Dream Roller Coaster',
+      storyline: "You're a theme park engineer tasked with designing the most exciting roller coaster! Use different track pieces to create an amazing ride!",
+      objective: 'Learn geometry, distance calculations, angles, and basic physics through roller coaster design',
+      materials: ['Straight Track', 'Curved Track', 'Loop', 'Drop', 'Support Pillar'],
       instructions: [
-        'Select shapes from the left panel',
-        'Drag shapes onto the building canvas',
-        'Rotate and resize shapes as needed',
-        'Build symmetrical structures',
-        'Use the Taj Mahal outline as a guide',
-        'Create your own architectural variations'
+        'Select track pieces from the left panel',
+        'Drag pieces onto the grid to build your coaster',
+        'Connect pieces to form a complete track',
+        'Watch the math calculations update in real-time',
+        'Click "Test Ride" to see the cart animation',
+        'Optimize for speed, safety, and fun!'
       ],
-      explanation: 'Architecture uses geometric principles, symmetry, and proportional relationships to create beautiful and stable structures.'
+      explanation: 'Roller coasters use physics principles like gravity, momentum, and centripetal force. The track length, angles, and height differences all affect the ride experience.'
     }
   };
 
@@ -120,7 +124,7 @@ const FunActivities: React.FC = () => {
     biology: ['dna-extraction'],
     chemistry: ['mix-lab'],
     physics: ['projectile-motion'],
-    mathematics: ['taj-mahal-builder']
+    mathematics: ['roller-coaster-builder']
   };
 
   const subjectIcons = {
@@ -154,13 +158,17 @@ const FunActivities: React.FC = () => {
     setPower([50]);
     setIsLaunching(false);
     setTrajectory([]);
-    setSelectedShape('');
-    setPlacedShapes([]);
+    setSelectedTrackPiece('');
+    setPlacedTracks([]);
+    setIsTestingRide(false);
+    setTotalTrackLength(0);
+    setEstimatedTime(0);
+    setLoopCount(0);
   };
 
   const handleBackToLabs = () => {
     setSelectedExperiment(null);
-    setCurrentSubject('');
+    // Don't reset currentSubject - keep it to return to same category
   };
 
   // DNA Extraction Functions
@@ -271,37 +279,58 @@ const FunActivities: React.FC = () => {
     setIsLaunching(false);
   };
 
-  // Taj Mahal Builder Functions
-  const shapes = [
-    { type: 'rectangle', name: 'Rectangle', icon: '▭' },
-    { type: 'square', name: 'Square', icon: '◻' },
-    { type: 'semi-circle', name: 'Semi-circle', icon: '◐' },
-    { type: 'dome', name: 'Dome', icon: '◔' },
-    { type: 'pillar', name: 'Pillar', icon: '▌' }
+  // Roller Coaster Builder Functions
+  const trackPieces = [
+    { type: 'straight', name: 'Straight Track', icon: '━', length: 5 },
+    { type: 'curved', name: 'Curved Track', icon: '╭', length: 7 },
+    { type: 'loop', name: 'Loop', icon: '○', length: 10 },
+    { type: 'drop', name: 'Drop', icon: '╲', length: 8 },
+    { type: 'support', name: 'Support Pillar', icon: '▌', length: 0 }
   ];
 
-  const handleShapePlace = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!selectedShape) return;
+  const handleTrackPlace = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!selectedTrackPiece) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const newShape = {
+    const piece = trackPieces.find(p => p.type === selectedTrackPiece);
+    const newTrack = {
       id: Date.now().toString(),
-      type: selectedShape,
+      type: selectedTrackPiece,
       x,
       y,
       rotation: 0
     };
 
-    setPlacedShapes([...placedShapes, newShape]);
-    setSelectedShape('');
+    const newTracks = [...placedTracks, newTrack];
+    setPlacedTracks(newTracks);
+    setSelectedTrackPiece('');
+
+    // Calculate stats
+    const totalLength = newTracks.reduce((sum, track) => {
+      const trackPiece = trackPieces.find(p => p.type === track.type);
+      return sum + (trackPiece?.length || 0);
+    }, 0);
+    setTotalTrackLength(totalLength);
+    setEstimatedTime(Math.round(totalLength * 0.8));
+    setLoopCount(newTracks.filter(track => track.type === 'loop').length);
   };
 
-  const resetTajMahal = () => {
-    setPlacedShapes([]);
-    setSelectedShape('');
+  const testRide = () => {
+    if (placedTracks.length === 0) return;
+    setIsTestingRide(true);
+    setTimeout(() => setIsTestingRide(false), 3000);
+  };
+
+  const resetRollerCoaster = () => {
+    setPlacedTracks([]);
+    setSelectedTrackPiece('');
+    setIsTestingRide(false);
+    setTotalTrackLength(0);
+    setEstimatedTime(0);
+    setLoopCount(0);
   };
 
   if (selectedExperiment) {
@@ -623,85 +652,116 @@ const FunActivities: React.FC = () => {
               </Card>
             )}
 
-            {/* Taj Mahal Builder */}
-            {selectedExperiment.id === 'taj-mahal-builder' && (
+            {/* Roller Coaster Builder */}
+            {selectedExperiment.id === 'roller-coaster-builder' && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    🏛️ Taj Mahal Builder
-                    <Button onClick={resetTajMahal} variant="outline" size="sm">
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Reset
-                    </Button>
+                    🎢 Roller Coaster Builder
+                    <div className="flex gap-2">
+                      <Button onClick={testRide} variant="outline" size="sm" disabled={placedTracks.length === 0 || isTestingRide}>
+                        {isTestingRide ? '🚗 Testing...' : '🚗 Test Ride'}
+                      </Button>
+                      <Button onClick={resetRollerCoaster} variant="outline" size="sm">
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Reset
+                      </Button>
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-4 gap-6">
                     <div>
-                      <h3 className="font-semibold mb-4">Shape Palette</h3>
+                      <h3 className="font-semibold mb-4">Track Pieces</h3>
                       <div className="space-y-2">
-                        {shapes.map((shape) => (
+                        {trackPieces.map((piece) => (
                           <div
-                            key={shape.type}
+                            key={piece.type}
                             className={`p-3 rounded-lg border-2 cursor-pointer transition-all hover:border-primary ${
-                              selectedShape === shape.type ? 'border-primary bg-primary/10' : 'border-gray-300'
+                              selectedTrackPiece === piece.type ? 'border-primary bg-primary/10' : 'border-gray-300'
                             }`}
-                            onClick={() => setSelectedShape(shape.type)}
+                            onClick={() => setSelectedTrackPiece(piece.type)}
                           >
-                            <div className="text-2xl text-center">{shape.icon}</div>
-                            <div className="text-xs text-center mt-1">{shape.name}</div>
+                            <div className="text-2xl text-center">{piece.icon}</div>
+                            <div className="text-xs text-center mt-1">{piece.name}</div>
+                            <div className="text-xs text-center text-muted-foreground">
+                              {piece.length > 0 ? `${piece.length} units` : 'Support'}
+                            </div>
                           </div>
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground mt-4">
-                        Select a shape, then click on the canvas to place it!
+                        Select a track piece, then click on the grid to place it!
                       </p>
                     </div>
 
                     <div className="md:col-span-3">
-                      <h3 className="font-semibold mb-4">Building Canvas</h3>
+                      <h3 className="font-semibold mb-4">Coaster Grid</h3>
                       <div 
-                        className="relative w-full h-96 bg-gradient-to-b from-sky-100 to-green-100 rounded-lg border-2 border-dashed border-gray-300 cursor-crosshair"
-                        onClick={handleShapePlace}
+                        className={`relative w-full h-96 bg-gradient-to-b from-blue-100 to-yellow-100 rounded-lg border-2 border-dashed border-gray-300 cursor-crosshair ${isTestingRide ? 'animate-pulse' : ''}`}
+                        onClick={handleTrackPlace}
                       >
-                        {/* Taj Mahal outline guide */}
-                        <svg className="absolute inset-0 w-full h-full opacity-20">
-                          <path
-                            d="M 200,350 L 150,300 L 150,250 L 175,225 L 225,225 L 250,250 L 250,300 L 200,350 Z"
-                            stroke="#6b7280"
-                            strokeWidth="2"
-                            fill="none"
-                            strokeDasharray="5,5"
-                          />
-                          <circle cx="200" cy="200" r="30" stroke="#6b7280" strokeWidth="2" fill="none" strokeDasharray="5,5"/>
-                        </svg>
+                        {/* Grid pattern */}
+                        <div className="absolute inset-0 opacity-20">
+                          {Array.from({ length: 20 }).map((_, i) => (
+                            <div key={i} className="border-b border-gray-300" style={{ height: '5%' }}></div>
+                          ))}
+                        </div>
 
-                        {/* Placed shapes */}
-                        {placedShapes.map((shape) => (
+                        {/* Placed tracks */}
+                        {placedTracks.map((track) => (
                           <div
-                            key={shape.id}
-                            className="absolute transform -translate-x-1/2 -translate-y-1/2 text-2xl cursor-move"
+                            key={track.id}
+                            className={`absolute transform -translate-x-1/2 -translate-y-1/2 text-2xl cursor-move ${isTestingRide && track.type !== 'support' ? 'animate-bounce' : ''}`}
                             style={{ 
-                              left: shape.x, 
-                              top: shape.y, 
-                              transform: `translate(-50%, -50%) rotate(${shape.rotation}deg)`
+                              left: track.x, 
+                              top: track.y, 
+                              transform: `translate(-50%, -50%) rotate(${track.rotation}deg)`,
+                              color: track.type === 'loop' ? '#f59e0b' : track.type === 'drop' ? '#ef4444' : '#3b82f6'
                             }}
                           >
-                            {shapes.find(s => s.type === shape.type)?.icon}
+                            {trackPieces.find(p => p.type === track.type)?.icon}
                           </div>
                         ))}
 
+                        {/* Test ride cart animation */}
+                        {isTestingRide && placedTracks.length > 0 && (
+                          <div 
+                            className="absolute w-6 h-6 bg-red-500 rounded-full animate-ping"
+                            style={{ left: placedTracks[0].x, top: placedTracks[0].y }}
+                          >
+                            🚗
+                          </div>
+                        )}
+
                         <div className="absolute bottom-2 left-2 text-xs text-gray-600">
-                          Shapes placed: {placedShapes.length}
+                          Track pieces: {placedTracks.length}
                         </div>
                       </div>
 
-                      {placedShapes.length > 0 && (
-                        <div className="mt-4 p-4 bg-orange-50 rounded-lg">
-                          <h4 className="font-semibold text-orange-800">🏗️ Building Progress</h4>
-                          <p className="text-sm text-orange-700 mt-2">
-                            Great work! You've placed {placedShapes.length} shapes. 
-                            Try to create symmetrical patterns like the real Taj Mahal!
+                      {/* Math Statistics */}
+                      <div className="mt-4 grid grid-cols-3 gap-4">
+                        <div className="p-3 bg-blue-50 rounded-lg">
+                          <h4 className="font-semibold text-blue-800">📏 Track Length</h4>
+                          <p className="text-lg font-bold text-blue-600">{totalTrackLength} units</p>
+                        </div>
+                        <div className="p-3 bg-green-50 rounded-lg">
+                          <h4 className="font-semibold text-green-800">⏱️ Estimated Time</h4>
+                          <p className="text-lg font-bold text-green-600">{estimatedTime}s</p>
+                        </div>
+                        <div className="p-3 bg-orange-50 rounded-lg">
+                          <h4 className="font-semibold text-orange-800">🔄 Loops</h4>
+                          <p className="text-lg font-bold text-orange-600">{loopCount}</p>
+                        </div>
+                      </div>
+
+                      {placedTracks.length > 0 && (
+                        <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+                          <h4 className="font-semibold text-purple-800">🎢 Coaster Stats</h4>
+                          <p className="text-sm text-purple-700 mt-2">
+                            Your coaster has {placedTracks.length} pieces with a total length of {totalTrackLength} units. 
+                            The estimated ride time is {estimatedTime} seconds with {loopCount} thrilling loops!
+                            {totalTrackLength > 50 && " That's one epic roller coaster! 🎉"}
                           </p>
                         </div>
                       )}
@@ -752,7 +812,7 @@ const FunActivities: React.FC = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="biology" className="w-full">
+        <Tabs defaultValue={currentSubject || "biology"} value={currentSubject || "biology"} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8">
             {Object.entries(subjectIcons).map(([subject, icon]) => (
               <TabsTrigger key={subject} value={subject} className="flex items-center gap-2">
