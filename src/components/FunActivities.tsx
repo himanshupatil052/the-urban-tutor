@@ -26,7 +26,7 @@ interface Experiment {
 
 const FunActivities: React.FC = () => {
   const [selectedExperiment, setSelectedExperiment] = useState<Experiment | null>(null);
-  const [currentSubject, setCurrentSubject] = useState<string>('');
+  const [currentSubject, setCurrentSubject] = useState<string>('biology');
   
   // DNA Extraction State
   const [dnaStep, setDnaStep] = useState(0);
@@ -812,7 +812,7 @@ const FunActivities: React.FC = () => {
           </p>
         </div>
 
-        <Tabs defaultValue={currentSubject || "biology"} value={currentSubject || "biology"} className="w-full">
+        <Tabs value={currentSubject} onValueChange={setCurrentSubject} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8">
             {Object.entries(subjectIcons).map(([subject, icon]) => (
               <TabsTrigger key={subject} value={subject} className="flex items-center gap-2">
