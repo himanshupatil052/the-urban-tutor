@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Shuffle, ChevronDown, Settings } from 'lucide-react';
+import { Shuffle, ChevronDown, Settings, Users } from 'lucide-react';
 import StudentSettings from './StudentSettings';
 
 const funnyAvatars = [
@@ -18,7 +17,11 @@ const funnyAvatars = [
   { id: 'wizard', emoji: '🧙‍♂️', name: 'Math Wizard' }
 ];
 
-const UserProfile: React.FC = () => {
+interface UserProfileProps {
+  onParentsClick?: () => void;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ onParentsClick }) => {
   const [selectedAvatar, setSelectedAvatar] = useState(funnyAvatars[0]);
   const [showAvatars, setShowAvatars] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -44,18 +47,19 @@ const UserProfile: React.FC = () => {
 
   return (
     <>
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
-        <div className="flex items-center gap-4">
+      <div className="bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+        {/* Left: Avatar + Greeting */}
+        <div className="flex items-center gap-3">
           <div className="relative">
             <button
               onClick={() => setShowAvatars(!showAvatars)}
               className="relative group"
             >
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center text-3xl border-3 border-blue-200 group-hover:border-blue-400 transition-colors shadow-sm">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center text-2xl border-2 border-blue-200 group-hover:border-blue-400 transition-colors">
                 {selectedAvatar.emoji}
               </div>
-              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-1 group-hover:bg-blue-600 transition-colors shadow-sm">
-                <ChevronDown size={12} />
+              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 group-hover:bg-blue-600 transition-colors">
+                <ChevronDown size={10} />
               </div>
             </button>
 
@@ -107,18 +111,30 @@ const UserProfile: React.FC = () => {
             )}
           </div>
 
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-800 mb-1">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800">
               {getGreeting()}, {userName}! 👋
             </h3>
-            <p className="text-gray-600 text-sm mb-2">Ready to learn something new today?</p>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Playing as:</span>
-              <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                {selectedAvatar.name}
-              </span>
-            </div>
+            <p className="text-gray-500 text-sm">Ready to learn something new today?</p>
           </div>
+        </div>
+
+        {/* Right: Playing as + Parents Section */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full">
+            <span className="text-xs text-gray-500">Playing as:</span>
+            <span className="text-xs font-medium text-blue-600">{selectedAvatar.name}</span>
+          </div>
+          
+          {onParentsClick && (
+            <button
+              onClick={onParentsClick}
+              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors text-sm font-medium"
+            >
+              <Users size={16} />
+              Parents
+            </button>
+          )}
         </div>
       </div>
 

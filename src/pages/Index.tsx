@@ -7,7 +7,7 @@ import DailyGoals from '@/components/DailyGoals';
 import FunActivities from '@/components/FunActivities';
 import VideoPlayer from '@/components/VideoPlayer';
 import ParentsSection from '@/components/ParentsSection';
-import { Users } from 'lucide-react';
+
 
 interface Chapter {
   id: number;
@@ -96,31 +96,9 @@ const Index = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* Header with Profile and Parents Section */}
-              <div className="flex items-start justify-between gap-4">
-                {/* Profile Section */}
-                <div className="flex-1">
-                  <UserProfile />
-                </div>
-
-                {/* Parents Section Button */}
-                <button
-                  onClick={() => setShowParentsSection(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl flex items-center gap-2 transition-colors shadow-sm"
-                >
-                  <Users size={20} />
-                  <span className="font-medium">Parents Section</span>
-                </button>
-              </div>
-
-              {/* Welcome to Urban Tutor banner */}
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-6 lg:p-8 text-center">
-                <h1 className="text-2xl lg:text-3xl font-bold mb-4">Welcome to Urban Tutor! 🎓</h1>
-                <p className="text-blue-100 text-base lg:text-lg">
-                  Your personalized learning journey starts here. Choose a subject from the sidebar to begin!
-                </p>
-              </div>
+            <div className="space-y-4">
+              {/* Compact Header with Profile and Parents Section */}
+              <UserProfile onParentsClick={() => setShowParentsSection(true)} />
 
               {/* Fun Activities */}
               <FunActivities />
