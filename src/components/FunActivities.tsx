@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -26,7 +26,7 @@ interface Experiment {
 
 const FunActivities: React.FC = () => {
   const [selectedExperiment, setSelectedExperiment] = useState<Experiment | null>(null);
-  const [currentSubject, setCurrentSubject] = useState<string>('biology');
+  const [currentSubject, setCurrentSubject] = useState<string | null>(null);
   
   // DNA Extraction State
   const [dnaStep, setDnaStep] = useState(0);
@@ -168,7 +168,12 @@ const FunActivities: React.FC = () => {
 
   const handleBackToLabs = () => {
     setSelectedExperiment(null);
-    // Don't reset currentSubject - keep it to return to same category
+    // Keep currentSubject to return to same category
+  };
+
+  const handleBackToSubjects = () => {
+    setCurrentSubject(null);
+    setSelectedExperiment(null);
   };
 
   // DNA Extraction Functions
@@ -800,79 +805,121 @@ const FunActivities: React.FC = () => {
     );
   }
 
+  // Step 1: Show all subjects
+  if (!currentSubject) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-3">
+              🔬 Fun Labs
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Choose a subject to explore exciting experiments!
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {Object.entries(subjectIcons).map(([subject, icon]) => (
+              <Card 
+                key={subject}
+                className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => setCurrentSubject(subject)}
+              >
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`p-4 rounded-xl bg-gradient-to-r ${subjectColors[subject as keyof typeof subjectColors]} text-white shadow-lg`}>
+                      {icon}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold capitalize">{subject}</h2>
+                      <p className="text-muted-foreground">
+                        {subjectExperiments[subject as keyof typeof subjectExperiments].length} experiment(s)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground">
+                      {subject === 'biology' && 'Discover the secrets of living organisms'}
+                      {subject === 'chemistry' && 'Mix chemicals and observe reactions'}
+                      {subject === 'physics' && 'Explore forces, motion and energy'}
+                      {subject === 'mathematics' && 'Build and calculate with shapes'}
+                    </p>
+                  </div>
+                  <Button className="w-full mt-6 group-hover:bg-primary/90">
+                    Explore Experiments
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 2: Show experiments list for selected subject
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-2">
-            🔬 Fun Labs
-          </h1>
-          <p className="text-muted-foreground">
-            Explore interactive science experiments across four exciting subjects!
-          </p>
+        <div className="flex items-center gap-4 mb-8">
+          <Button 
+            onClick={handleBackToSubjects}
+            variant="outline" 
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            All Subjects
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className={`p-3 rounded-lg bg-gradient-to-r ${subjectColors[currentSubject as keyof typeof subjectColors]} text-white`}>
+              {subjectIcons[currentSubject as keyof typeof subjectIcons]}
+            </div>
+            <h1 className="text-3xl font-bold capitalize">{currentSubject} Experiments</h1>
+          </div>
         </div>
 
-        <Tabs value={currentSubject} onValueChange={setCurrentSubject} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            {Object.entries(subjectIcons).map(([subject, icon]) => (
-              <TabsTrigger key={subject} value={subject} className="flex items-center gap-2">
-                {icon}
-                <span className="capitalize">{subject}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {Object.entries(subjectExperiments).map(([subject, experimentIds]) => (
-            <TabsContent key={subject} value={subject}>
-              <div className="grid gap-6">
-                {experimentIds.map(experimentId => {
-                  const experiment = experiments[experimentId];
-                  return (
-                    <Card key={experiment.id} className="group hover:shadow-lg transition-all duration-300">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-3 rounded-lg bg-gradient-to-r ${subjectColors[subject as keyof typeof subjectColors]} text-white`}>
-                              {subjectIcons[subject as keyof typeof subjectIcons]}
-                            </div>
-                            <div>
-                              <CardTitle className="text-xl">{experiment.title}</CardTitle>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {experiment.storyline}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="font-semibold text-sm mb-2">🎯 Learning Objective:</h4>
-                            <p className="text-sm text-muted-foreground">{experiment.objective}</p>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">Interactive Simulation</Badge>
-                            <Badge variant="outline">{experiment.materials.length} Materials</Badge>
-                            <Badge variant="outline">{experiment.instructions.length} Steps</Badge>
-                          </div>
-                          
-                          <Button 
-                            onClick={() => handleStartExperiment(experiment.id, subject)}
-                            className="w-full"
-                            size="lg"
-                          >
-                            Start Experiment
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+        <div className="grid gap-6">
+          {subjectExperiments[currentSubject as keyof typeof subjectExperiments].map(experimentId => {
+            const experiment = experiments[experimentId];
+            return (
+              <Card key={experiment.id} className="group hover:shadow-lg transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-xl">{experiment.title}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {experiment.storyline}
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">🎯 Learning Objective:</h4>
+                      <p className="text-sm text-muted-foreground">{experiment.objective}</p>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">Interactive Simulation</Badge>
+                      <Badge variant="outline">{experiment.materials.length} Materials</Badge>
+                      <Badge variant="outline">{experiment.instructions.length} Steps</Badge>
+                    </div>
+                    
+                    <Button 
+                      onClick={() => handleStartExperiment(experiment.id, currentSubject)}
+                      className="w-full"
+                      size="lg"
+                    >
+                      Start Experiment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
